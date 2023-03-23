@@ -136,11 +136,12 @@ with open("fisheye_calibration_data.json", "w") as f:
 # Create an entry in ../config.ini 
 # Note. This assume the application is one directory below where the config.ini is located.   
 config = configparser.ConfigParser()
+osFilename=os.path.join(os.pardir, 'config.ini')
+config.read(osFilename)
 config.add_section('fisheye')
 config.set('fisheye', 'K', str(K))
 config.set('fisheye', 'D', str(D))
 config.set('fisheye', 'Scaled_K', str(scaled_K))
-osFilename=os.path.join(os.pardir, 'config.ini')
 with open(osFilename, 'w') as config_file:
     config.write(config_file)
     
