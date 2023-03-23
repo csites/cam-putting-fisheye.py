@@ -83,12 +83,8 @@ else
     K=none
 if parser.has_option('fisheye', 'D')
     D=np.array(eval(config.get('fisheye', 'D')))
-else
-    D=none
 if parser.has_option('fisheye', 'Smart_K')
     smart_K=np.array(eval(config.get('fisheye', 'Smart_K')))
-else 
-    smart_K=none
 
 # Detection Gateway
 x1=sx2+10
