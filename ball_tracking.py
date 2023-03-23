@@ -12,10 +12,18 @@ import math
 from decimal import *
 import requests
 from configparser import ConfigParser
+import re
+import ast
+
+def str2array(s):
+    # Remove space after [
+    s=re.sub('\[ +', '[', s.strip())
+    # Replace commas and spaces
+    s=re.sub('[,\s]+', ', ', s)
+    return np.array(ast.literal_eval(s))
 
 parser = ConfigParser()
 CFG_FILE = 'config.ini'
-
 parser.read(CFG_FILE)
 
 # Startpoint Zone
@@ -76,15 +84,16 @@ if parser.has_option('putting', 'width'):
     width=int(parser.get('putting', 'width'))
 else:
     width=640
-# Fisheye len correction matrixes  
-if parser.has_option('fisheye', 'K')
-    K=np.array(eval(config.get('fisheye', 'K'))) 
-else 
-    K=none
-if parser.has_option('fisheye', 'D')
-    D=np.array(eval(config.get('fisheye', 'D')))
-if parser.has_option('fisheye', 'Smart_K')
-    smart_K=np.array(eval(config.get('fisheye', 'Smart_K')))
+# Read Fisheye len correction matrixes from config.ini  
+if parser.has_option('fisheye', 'k'):
+    K=str2array(parser.get('fisheye', 'k')) 
+    K_test=1
+else: 
+    K_test=0
+if parser.has_option('fisheye', 'd'):
+    D=str2array(parser.get('fisheye', 'd'))
+if parser.has_option('fisheye', 'scaled_k'):
+    scaled_K=str2array(parser.get('fisheye', 'scaled_k'))
 
 # Detection Gateway
 x1=sx2+10
@@ -808,7 +817,7 @@ while True:
 
                                         # CBS: This is where we do fisheye correction on the two corredinates (startPos, and endPos).
                                         # This will create Two new positions (fstartPos, and fendPos)
-                                        if K != none
+                                        if K == 1
                                               start_distortPoints=np.array[[startPos[0], startPos[1]]], dtype=np.float32)
                                               end_distortPoints = np.array[[endPos[0], endPos[1]]], dtype=np.float32)
                                               # Undistorting the points using OpenCV's undistortPoints() function
