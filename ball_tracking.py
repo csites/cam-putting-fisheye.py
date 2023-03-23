@@ -76,7 +76,19 @@ if parser.has_option('putting', 'width'):
     width=int(parser.get('putting', 'width'))
 else:
     width=640
-
+# Fisheye len correction matrixes  
+if parser.has_option('fisheye', 'K')
+    K=np.array(eval(config.get('fisheye', 'K'))) 
+else 
+    K=none
+if parser.has_option('fisheye', 'D')
+    D=np.array(eval(config.get('fisheye', 'D')))
+else
+    D=none
+if parser.has_option('fisheye', 'Smart_K')
+    smart_K=np.array(eval(config.get('fisheye', 'Smart_K')))
+else 
+    smart_K=none
 
 # Detection Gateway
 x1=sx2+10
@@ -313,14 +325,14 @@ height = vs.get(cv2.CAP_PROP_FRAME_HEIGHT)
 width = vs.get(cv2.CAP_PROP_FRAME_WIDTH)
 saturation = vs.get(cv2.CAP_PROP_SATURATION)
 exposure = vs.get(cv2.CAP_PROP_EXPOSURE)
+hue = vs.get(cv2.CAP_PROP_HUE)
 
 print("video_fps: "+str(video_fps))
 print("height: "+str(height))
 print("width: "+str(width))
 print("saturation: "+str(saturation))
 print("exposure: "+str(exposure))
-
-
+print("hue: "+str(hue))
 
 
 if type(video_fps) == float:
@@ -470,6 +482,14 @@ def setDarkness(value):
     global darkness
     darkness = int(value)
     parser.set('putting', 'darkness', str(darkness))
+    parser.write(open(CFG_FILE, "w"))
+    pass    
+
+def setHue(value):
+    print(value)    
+    global hue
+    hue = int(value)
+    parser.set('putting', 'hue', str(hue))
     parser.write(open(CFG_FILE, "w"))
     pass    
 
@@ -789,6 +809,20 @@ while True:
                                         print("Ball Left. Position: "+str(center))
                                         left = True
                                         endPos = center
+
+                                        # CBS: This is where we do fisheye correction on the two corredinates (startPos, and endPos).
+                                        # This will create Two new positions (fstartPos, and fendPos)
+                                        if K != none
+                                              start_distortPoints=np.array[[startPos[0], startPos[1]]], dtype=np.float32)
+                                              end_distortPoints = np.array[[endPos[0], endPos[1]]], dtype=np.float32)
+                                              # Undistorting the points using OpenCV's undistortPoints() function
+                                              start_undistortedPoints, _ = cv2.fisheye.undistortPoints(start_distortedPoints, K, D, newCameraMatrix=scaled_K)
+                                              end_undistortedPoints , _ = cv2.fisheye.undistortPoints(end_distortedPoints, K, D, newCameraMatrix=scaled_K)
+                                              startPos = start_undistortedPoints
+                                              endPos = end_undistortedPoints
+                                        else
+                                              pass
+
                                         # calculate the distance traveled by the ball in pixel
                                         a = endPos[0] - startPos[0]
                                         b = endPos[1] - startPos[1]
