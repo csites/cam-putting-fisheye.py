@@ -817,15 +817,15 @@ while True:
 
                                         # CBS: This is where we do fisheye correction on the two corredinates (startPos, and endPos).
                                         # This will create Two new positions (fstartPos, and fendPos)
-                                        if K_test == 1
-                                              start_distortedPoints=np.array([[startPos[0], startPos[1]], dtype=np.float32)
-                                              end_distortedPoints = np.array([[endPos[0], endPos[1]], dtype=np.float32)
+                                        if K_test == 1:
+                                              start_distortedPoints=np.array([startPos[0], startPos[1]], dtype=np.float32)
+                                              end_distortedPoints = np.array([endPos[0], endPos[1]], dtype=np.float32)
                                               # Undistorting the points using OpenCV's undistortPoints() function
                                               start_undistortedPoints, _ = cv2.fisheye.undistortPoints(start_distortedPoints, K, D, newCameraMatrix=scaled_K)
                                               end_undistortedPoints , _ = cv2.fisheye.undistortPoints(end_distortedPoints, K, D, newCameraMatrix=scaled_K)
                                               startPos = start_undistortedPoints
                                               endPos = end_undistortedPoints
-                                        else
+                                        else:
                                               pass
 
                                         # calculate the distance traveled by the ball in pixel
