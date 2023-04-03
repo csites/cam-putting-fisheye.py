@@ -20,7 +20,7 @@ def str2array(s):
     s=re.sub('\[ +', '[', s.strip())
     # Replace commas and spaces
     s=re.sub('[,\s]+', ', ', s)
-    return np.array(ast.literal_eval(s))
+    return np.array(ast.literal_eval(s),dtype=np.float64)
 
 parser = ConfigParser()
 CFG_FILE = 'config.ini'
@@ -87,13 +87,16 @@ else:
 # Read Fisheye len correction matrixes from config.ini  
 if parser.has_option('fisheye', 'k'):
     K=str2array(parser.get('fisheye', 'k')) 
+    print(K)
     K_test=1
 else: 
     K_test=0
 if parser.has_option('fisheye', 'd'):
     D=str2array(parser.get('fisheye', 'd'))
+    print(D)
 if parser.has_option('fisheye', 'scaled_k'):
     scaled_K=str2array(parser.get('fisheye', 'scaled_k'))
+    print(scaled_K)
 
 # Detection Gateway
 x1=sx2+10
@@ -818,13 +821,19 @@ while True:
                                         # CBS: This is where we do fisheye correction on the two corredinates (startPos, and endPos).
                                         # This will create Two new positions (fstartPos, and fendPos)
                                         if K_test == 1:
-                                              start_distortedPoints=np.array([startPos[0], startPos[1]], dtype=np.float32)
-                                              end_distortedPoints = np.array([endPos[0], endPos[1]], dtype=np.float32)
+                                              #start_distortedPoints=np.array([startPos[0], startPos[1]], dtype=np.float64)
+                                              # end_distortedPoints = np.array([endPos[0], endPos[1]], dtype=np.float64)
+                                              spts=np.array([startPos, endPos]).reshape(-1,1,2)
+                                              print("start and end position: "+str(spts))
+                                              
+                                              spts = spts.astype(np.float64)
                                               # Undistorting the points using OpenCV's undistortPoints() function
-                                              start_undistortedPoints, _ = cv2.fisheye.undistortPoints(start_distortedPoints, K, D, newCameraMatrix=scaled_K)
-                                              end_undistortedPoints , _ = cv2.fisheye.undistortPoints(end_distortedPoints, K, D, newCameraMatrix=scaled_K)
-                                              startPos = start_undistortedPoints
-                                              endPos = end_undistortedPoints
+                                              undistorted_pts = cv2.fisheye.undistortPoints(spts, K, D)
+                                              print("Undistorted start end  : ",str(undistorted_pts))
+                                              undistorted_pts = undistorted_pts.astype(np.int64)
+                                              startPos = undistorted_pts[0][0]
+                                              endPos = undistorted_pts[1][0]
+                                             
                                         else:
                                               pass
 
@@ -1034,7 +1043,7 @@ while True:
         break
     if key == ord("a"):
         cv2.namedWindow("Advanced Settings")
-        if mjpeg != 0:
+        if mjpegenabled != 0:
             vs.set(cv2.CAP_PROP_SETTINGS, 37)  
         cv2.resizeWindow("Advanced Settings", 1000, 400)
         cv2.createTrackbar("X Start", "Advanced Settings", int(sx1), 640, setXStart)
