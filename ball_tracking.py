@@ -114,16 +114,16 @@ if parser.has_option('fisheye', 'scaled_k'):
 # -12  312 us
 # -13  150 us
 if parser.has_option('camera_properties','exposure'):
-    cam_exposure=parser.get('camera_propertys','exposure')
+    cam_exposure=parser.get('camera_properties','exposure')
 else:
     cam_exposure=0
 # Auto_exposure has two values 3=manual exposure (use exposure value above), 1=auto_mode. Exposure controls max speed of camera.     
 if parser.has_option('camera_properties','auto_exposure'):
-    cam_autoexposure=parser.get('camera_propertys','auto_exposure')
+    cam_autoexposure=parser.get('camera_properties','auto_exposure')
 else:
     cam_autoexposure=0
 if parser.has_option('camera_properties','hue'):
-    cam_hue=parser.get('camera_propertys','hue')
+    cam_hue=parser.get('camera_properties','hue')
 else:
     cam_hue=0    
 if parser.has_option('camera_properties','gamma'):
@@ -135,7 +135,7 @@ if parser.has_option('camera_properties','gain'):
 else:
     cam_gain=0
 if parser.has_option('camera_properties','saturation'):
-    cam_saturation=parser.get('camera_propertys','saturation')
+    cam_saturation=parser.get('camera_properties','saturation')
 else:
     cam_saturation=0
          
@@ -329,10 +329,15 @@ message = ""
 # if a webcam index is supplied, grab the reference
 if args.get("camera", False):
     webcamindex = args["camera"]
+# CB: if not passed as an argument, use the camera_properties in config.ini
+else:
+  if parser.has_option('camera_properties','webcamindex'):
+    webcamindex=parser.get('camera_properties','webcamindex')
 
 # if a video path was not supplied, grab the reference
 # to the webcam
 if not args.get("video", False):
+# CB:   I think on Windows, video will always be cv2.CAP_DSHOW
     if mjpegenabled == 0:
         vs = cv2.VideoCapture(webcamindex + cv2.CAP_DSHOW)
     else:
@@ -1089,7 +1094,8 @@ while True:
     # show main putting window
 
     outputframe = resizeWithAspectRatio(frame, width=int(args["resize"]))
-    cv2.imshow("Putting View: Press q to exit / a for adv. settings / v", outputframe)
+    # CB: Show the video config, w=write video_config to config.ini
+    cv2.imshow("Putting View: Press q to exit / d=debug a=Advanced / v=video, w=write_video", outputframe)
     
     
     #cv2.moveWindow("Putting View: Press q to exit / a for adv. settings", 20,20)
@@ -1125,8 +1131,30 @@ while True:
         args["debug"] = 1
         myColorFinder = ColorFinder(True)
         myColorFinder.setTrackbarValues(hsvVals)
+#CB: Added a way to store video properties
     if key == ord("v"):
         vs.set(cv2.CAP_PROP_SETTINGS, 1)
+    if key == ord("w"):
+        print("Writing config file with video options")
+        hue = vs.get(cv2.CAP_PROP_HUE)
+        saturation = vs.get(cv2.CAP_PROP_SATURATION)
+        exposure = vs.get(cv2.CAP_PROP_EXPOSURE)
+        autoexposure = vs.get(cv2.CAP_PROP_AUTO_EXPOSURE)
+        gamma = vs.get(cv2.CAP_PROP_GAMMA)
+        gain = vs.get(cv2.CAP_PROP_GAIN)
+
+        parser.add_section('camera_properties')
+        parser.set('camera_properties', 'exposure', str(exposure))
+        parser.set('camera_properties', 'auto_exposure', str(auto_exposure))
+        parser.set('camera_properties', 'hue', str(hue))
+        parser.set('camera_properties', 'saturation', str(saturation))
+        parser.set('camera_properties', 'gamma', str(gama))
+        parser.set('camera_properties', 'gain', str(gain))
+        parser.set('camera_properties', 'auto_exposure', str(auto_exposure))
+        parser.set('camera_properties', 'webcamindex', str(webcamindex))
+        with open(CFG_FILE, 'w') as config_file:
+          parser.write(config_file)
+
           
     if actualFPS > 1:
         grayPreviousFrame = cv2.cvtColor(previousFrame, cv2.COLOR_BGR2GRAY)
