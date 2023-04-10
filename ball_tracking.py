@@ -98,6 +98,47 @@ if parser.has_option('fisheye', 'scaled_k'):
     scaled_K=str2array(parser.get('fisheye', 'scaled_k'))
     print(scaled_K)
 
+# Camera Paramters for IR camera settings. 0 will leave the paramters at default.
+# Camera exposure: Here are the exposure times, video quality decreases with faster exposure. -6 (20ms) is good for 60fps.
+#  -1  640 ms
+#  -2  320 ms
+#  -3  160 ms
+#  -4  80 ms
+#  -5  40 ms
+#  -6  20 ms
+#  -7  10 ms
+#  -8  5 ms
+#  -9  2.5 ms
+# -10  1.25 ms
+# -11  650 us
+# -12  312 us
+# -13  150 us
+if parser.has_option('camera_properties','exposure'):
+    cam_exposure=parser.get('camera_propertys','exposure')
+else:
+    cam_exposure=0
+# Auto_exposure has two values 3=manual exposure (use exposure value above), 1=auto_mode. Exposure controls max speed of camera.     
+if parser.has_option('camera_properties','auto_exposure'):
+    cam_autoexposure=parser.get('camera_propertys','auto_exposure')
+else:
+    cam_autoexposure=0
+if parser.has_option('camera_properties','hue'):
+    cam_hue=parser.get('camera_propertys','hue')
+else:
+    cam_hue=0    
+if parser.has_option('camera_properties','gamma'):
+    cam_gamma=parser.get('camera_properties','gamma')
+else:
+    cam_gamma=0
+if parser.has_option('camera_properties','gain'):
+    cam_gain=parser.get('camera_properties','gain')
+else:
+    cam_gain=0
+if parser.has_option('camera_properties','saturation'):
+    cam_saturation=parser.get('camera_propertys','saturation')
+else:
+    cam_saturation=0
+         
 # Detection Gateway
 x1=sx2+10
 x2=x1+10
@@ -293,7 +334,7 @@ if args.get("camera", False):
 # to the webcam
 if not args.get("video", False):
     if mjpegenabled == 0:
-        vs = cv2.VideoCapture(webcamindex)
+        vs = cv2.VideoCapture(webcamindex + cv2.CAP_DSHOW)
     else:
         vs = cv2.VideoCapture(webcamindex + cv2.CAP_DSHOW)
         # Check if FPS is overwritten in config
@@ -331,17 +372,42 @@ else:
 video_fps = vs.get(cv2.CAP_PROP_FPS)
 height = vs.get(cv2.CAP_PROP_FRAME_HEIGHT)
 width = vs.get(cv2.CAP_PROP_FRAME_WIDTH)
+hue = vs.get(cv2.CAP_PROP_HUE)
 saturation = vs.get(cv2.CAP_PROP_SATURATION)
 exposure = vs.get(cv2.CAP_PROP_EXPOSURE)
-hue = vs.get(cv2.CAP_PROP_HUE)
+autoexposure = vs.get(cv2.CAP_PROP_AUTO_EXPOSURE)
+gamma = vs.get(cv2.CAP_PROP_GAMMA)
+gain = vs.get(cv2.CAP_PROP_GAIN)
+
+# setup camera properties if any.
+if cam_exposure != 0:
+    vs.set(cv2.CAP_PROP_EXPOSURE, cam_exposure)
+    exposure = vs.get(cv2.CAP_PROP_EXPOSURE)
+if cam_autoexposure != 0:
+    vs.set(cv2.CAP_PROP_AUTO_EXPOSURE, cam_autoexposure)
+    autoexposure = vs.get(cv2.CAP_PROP_AUTO_EXPOSURE)
+if cam_hue != 0:
+    vs.set(cv2.CAP_PROP_HUE, cam_hue)
+    hue = vs.get(cv2.CAP_PROP_HUE)
+if cam_saturation != 0:
+    vs.set(cv2.CAP_PROP_SATURATION, cam_saturation)
+    saturation = vs.get(cv2.CAP_PROP_SATURATION)
+if cam_gamma != 0:
+    vs.set(cv2.CAP_PROP_GAMMA, cam_gamma)
+    gamma = vs.get(cv2.CAP_PROP_GAMMA)
+if cam_gain != 0:
+    vs.set(cv2.CAP_PROP_GAIN, cam_gain)
+    gain = vs.get(cv2.CAP_PROP_GAIN)
 
 print("video_fps: "+str(video_fps))
 print("height: "+str(height))
 print("width: "+str(width))
+print("hue: "+str(hue))
 print("saturation: "+str(saturation))
 print("exposure: "+str(exposure))
-print("hue: "+str(hue))
-
+print("auto exposure: "+str(autoexposure))
+print("gamma: "+str(gamma))
+print("gain: "+str(gain))
 
 if type(video_fps) == float:
     if video_fps == 0.0:
@@ -353,8 +419,8 @@ if type(video_fps) == float:
         new_fps = []
         new_fps.append(video_fps)
     video_fps = new_fps
-
-
+ 
+        
 # we are using x264 codec for mp4
 fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 #out1 = cv2.VideoWriter('Ball-New.mp4', apiPreference=0, fourcc=fourcc,fps=video_fps[0], frameSize=(int(width), int(height)))
@@ -821,19 +887,18 @@ while True:
                                         # CBS: This is where we do fisheye correction on the two corredinates (startPos, and endPos).
                                         # This will create Two new positions (fstartPos, and fendPos)
                                         if K_test == 1:
-                                              #start_distortedPoints=np.array([startPos[0], startPos[1]], dtype=np.float64)
-                                              # end_distortedPoints = np.array([endPos[0], endPos[1]], dtype=np.float64)
-                                              spts=np.array([startPos, endPos]).reshape(-1,1,2)
+                                              spts=[(startPos[0], startPos[1]),(endPos[0],endPos[1])]
                                               print("start and end position: "+str(spts))
                                               
-                                              spts = spts.astype(np.float64)
+                                              points = np.array([(*loc, 1) for loc in spts])
                                               # Undistorting the points using OpenCV's undistortPoints() function
-                                              undistorted_pts = cv2.fisheye.undistortPoints(spts, K, D)
-                                              print("Undistorted start end  : ",str(undistorted_pts))
-                                              undistorted_pts = undistorted_pts.astype(np.int64)
-                                              startPos = undistorted_pts[0][0]
-                                              endPos = undistorted_pts[1][0]
-                                             
+                                              undistorted_pts = cv2.fisheye.undistortPoints(points, K, D)
+                                              undistorted_locations = [(int(x/w), int(y/w)) for x, y, w in undistorted_pts]
+                                              print("Undistorted start end  : "+str(undistorted_locations))
+                                              undistorted_locations = undistorted_locations.astype(np.int64)
+                                              startPos = undistorted_locations[0]
+                                              endPos = undistorted_locations[1]
+                                              print("startPos="+str(startPos)+" endPos="+str(endPos)) 
                                         else:
                                               pass
 
@@ -1024,7 +1089,7 @@ while True:
     # show main putting window
 
     outputframe = resizeWithAspectRatio(frame, width=int(args["resize"]))
-    cv2.imshow("Putting View: Press q to exit / a for adv. settings", outputframe)
+    cv2.imshow("Putting View: Press q to exit / a for adv. settings / v", outputframe)
     
     
     #cv2.moveWindow("Putting View: Press q to exit / a for adv. settings", 20,20)
@@ -1036,6 +1101,7 @@ while True:
     if args.get("debug", False):
         cv2.imshow("MaskFrame", mask)
         cv2.imshow("Original", origframe)
+    
     
     key = cv2.waitKey(1) & 0xFF
     # if the 'q' key is pressed, stop the loop
@@ -1059,7 +1125,9 @@ while True:
         args["debug"] = 1
         myColorFinder = ColorFinder(True)
         myColorFinder.setTrackbarValues(hsvVals)
-
+    if key == ord("v"):
+        vs.set(cv2.CAP_PROP_SETTINGS, 1)
+          
     if actualFPS > 1:
         grayPreviousFrame = cv2.cvtColor(previousFrame, cv2.COLOR_BGR2GRAY)
         grayOrigframe = cv2.cvtColor(origframe, cv2.COLOR_BGR2GRAY)

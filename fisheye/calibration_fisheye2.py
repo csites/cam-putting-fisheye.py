@@ -7,7 +7,7 @@ import glob
 import configparser
 import os
 
-CHECKERBOARD = (8,6)
+CHECKERBOARD = (6,4)
 
 subpix_criteria = (cv2.TERM_CRITERIA_EPS+cv2.TERM_CRITERIA_MAX_ITER, 30, 0.1)
 calibration_flags = cv2.fisheye.CALIB_RECOMPUTE_EXTRINSIC+cv2.fisheye.CALIB_CHECK_COND+cv2.fisheye.CALIB_FIX_SKEW
@@ -28,12 +28,11 @@ for fname in images:
     else:
         assert _img_shape == img.shape[:2], "All images must share the same size."
 
-#    gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-#    _gray_shape = gray.shape[::-1]
+    gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+    _gray_shape = gray.shape[::-1]
 #    cv2.imshow(f"Greyimage", gray)
 #    cv2.waitKey(1)    
 #    gray = np.uint8(gray)
-    
     # Color-segmentation to get binary mask
     lwr = np.array([0, 0, 143])
     upr = np.array([179, 61, 252])
@@ -54,7 +53,7 @@ for fname in images:
     cv2.waitKey(1)
     
     # Find the chess board corners
-    # ret, corners = cv2.findChessboardCorners(res, CHECKERBOARD, cv2.CALIB_CB_ADAPTIVE_THRESH+cv2.CALIB_CB_FAST_CHECK+cv2.CALIB_CB_NORMALIZE_IMAGE)
+#    ret, corners = cv2.findChessboardCorners(res, CHECKERBOARD, cv2.CALIB_CB_ADAPTIVE_THRESH+cv2.CALIB_CB_FAST_CHECK+cv2.CALIB_CB_NORMALIZE_IMAGE)
     ret, corners = cv2.findChessboardCorners(res, CHECKERBOARD, flags=cv2.CALIB_CB_EXHAUSTIVE)
     
     # If found, add object points, image points (after refining them)
