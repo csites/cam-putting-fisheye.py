@@ -869,11 +869,11 @@ while True:
                                         # CBS: This is where we do fisheye correction on the two corredinates (startPos, and endPos).
                                         # This will create Two new positions (fstartPos, and fendPos)
                                         if K_test == 1:
-                                              distortPoints=np.array([[startPos[0], startPos[1]],[endPos[0], endPos[1]]], dtype=np.float32)
+                                              distortPoints = np.array([[startPos[0], startPos[1]],[endPos[0], endPos[1]]], dtype=np.float32)
                                               # Undistorting the points using OpenCV's undistortPoints() function
                                               start_undistortedPoints, _ = cv2.fisheye.undistortPoints(distortedPoints, K, D)[0]
                                               end_undistortedPoints , _ = cv2.fisheye.undistortPoints(distortedPoints, K, D)[1]
-                                              print("Old Start Position: "+str(startPOS)+" Old End Position: "+str(endPos))
+                                              print("Old Start Position: "+str(startPos)+" Old End Position: "+str(endPos))
                                               print("Nwe Start Position: "+str(start_undistortedPoints)+" New End Position: "+str(end_undistortedPoints))
                                               startPos = start_undistortedPoints
                                               endPos = end_undistortedPoints
