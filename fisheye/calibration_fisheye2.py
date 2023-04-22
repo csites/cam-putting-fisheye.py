@@ -6,8 +6,8 @@ import numpy as np
 import glob
 import configparser
 import os
-
-CHECKERBOARD = (6,4)
+# CBS:  Change to the number of rows and columns in the calibration chessboard.
+CHECKERBOARD = (7,7)
 
 subpix_criteria = (cv2.TERM_CRITERIA_EPS+cv2.TERM_CRITERIA_MAX_ITER, 30, 0.1)
 calibration_flags = cv2.fisheye.CALIB_RECOMPUTE_EXTRINSIC+cv2.fisheye.CALIB_CHECK_COND+cv2.fisheye.CALIB_FIX_SKEW
@@ -137,7 +137,8 @@ with open("fisheye_calibration_data.json", "w") as f:
 config = configparser.ConfigParser()
 osFilename=os.path.join(os.pardir, 'config.ini')
 config.read(osFilename)
-config.add_section('fisheye')
+if not config.has_section('fisheye'):
+    config.add_section('fisheye')
 config.set('fisheye', 'K', str(K))
 config.set('fisheye', 'D', str(D))
 config.set('fisheye', 'Scaled_K', str(scaled_K))

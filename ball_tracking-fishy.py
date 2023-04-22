@@ -12,8 +12,8 @@ import math
 from decimal import *
 import requests
 from configparser import ConfigParser
-import ast
 import re
+import ast
 
 def str2array(s):
     # Remove space after [
@@ -27,13 +27,13 @@ CFG_FILE = 'config.ini'
 parser.read(CFG_FILE)
 
 # Startpoint Zone
+
 ballradius = 0
 darkness = 0
 flipImage = 0
 mjpegenabled = 0
 ps4=0
 overwriteFPS = 0
-customhsv = {}
 
 
 if parser.has_option('putting', 'startx1'):
@@ -84,11 +84,6 @@ if parser.has_option('putting', 'width'):
     width=int(parser.get('putting', 'width'))
 else:
     width=640
-if parser.has_option('putting', 'customhsv'):
-    customhsv=ast.literal_eval(parser.get('putting', 'customhsv'))
-    print(customhsv)
-else:
-    customhsv={}
 # Read Fisheye len correction matrixes from config.ini  
 if parser.has_option('fisheye', 'k'):
     K=str2array(parser.get('fisheye', 'k')) 
@@ -102,11 +97,27 @@ if parser.has_option('fisheye', 'd'):
 if parser.has_option('fisheye', 'scaled_k'):
     scaled_K=str2array(parser.get('fisheye', 'scaled_k'))
     print(scaled_K)
-# Camera properties 
+
+# Camera Paramters for IR camera settings. 0 will leave the paramters at default.
+# Camera exposure: Here are the exposure times, video quality decreases with faster exposure. -6 (20ms) is good for 60fps.
+#  -1  640 ms
+#  -2  320 ms
+#  -3  160 ms
+#  -4  80 ms
+#  -5  40 ms
+#  -6  20 ms
+#  -7  10 ms
+#  -8  5 ms
+#  -9  2.5 ms
+# -10  1.25 ms
+# -11  650 us
+# -12  312 us
+# -13  150 us
 if parser.has_option('camera_properties','exposure'):
     cam_exposure=float(parser.get('camera_properties','exposure'))
 else:
     cam_exposure=0.0
+# Auto_exposure has two values 3=manual exposure (use exposure value above), 1=auto_mode. Exposure controls max speed of camera.     
 if parser.has_option('camera_properties','auto_exposure'):
     cam_autoexposure=float(parser.get('camera_properties','auto_exposure'))
 else:
@@ -135,12 +146,7 @@ if parser.has_option('camera_properties','saturation'):
     cam_saturation=float(parser.get('camera_properties','saturation'))
 else:
     cam_saturation=0.0
-if parser.has_option('camera_properties','webcamindex'):
-    cam_webcamindex=int(parser.get('camera_properties','webcamindex'))
-else:
-    cam_webcamindex=0
-    
-
+         
 # Detection Gateway
 x1=sx2+10
 x2=x1+10
@@ -212,7 +218,7 @@ ap.add_argument("-b", "--buffer", type=int, default=64,
 ap.add_argument("-w", "--camera", type=int, default=0,
                 help="webcam index number - default is 0")
 ap.add_argument("-c", "--ballcolor",
-                help="ball color - default is yellow")
+                help="ball color - default is white")
 ap.add_argument("-d", "--debug",
                 help="debug - color finder and wait timer")
 ap.add_argument("-r", "--resize", type=int, default=640,
@@ -245,6 +251,7 @@ orange = {'hmin': 0, 'smin': 219, 'vmin': 147, 'hmax': 19, 'smax': 255, 'vmax': 
 orange2 = {'hmin': 3, 'smin': 181, 'vmin': 134, 'hmax': 40, 'smax': 255, 'vmax': 255}# dark
 orange3 = {'hmin': 0, 'smin': 73, 'vmin': 150, 'hmax': 40, 'smax': 255, 'vmax': 255}# test
 orange4 = {'hmin': 3, 'smin': 181, 'vmin': 216, 'hmax': 40, 'smax': 255, 'vmax': 255}# ps3eye
+#orange4 = {'hmin': 0, 'smin': 0, 'vmin': 147, 'hmax': 81, 'smax': 159, 'vmax': 255} janl?
 
 calibrate = {}
 
@@ -252,43 +259,37 @@ calibrate = {}
 # default yellow option
 hsvVals = yellow
 
-if customhsv == {}:
-
-    if args.get("ballcolor", False):
-        if args["ballcolor"] == "white":
-            hsvVals = white
-        elif args["ballcolor"] == "white2":
-            hsvVals = white2
-        elif args["ballcolor"] ==  "yellow":
-            hsvVals = yellow 
-        elif args["ballcolor"] ==  "yellow2":
-            hsvVals = yellow2 
-        elif args["ballcolor"] ==  "orange":
-            hsvVals = orange
-        elif args["ballcolor"] ==  "orange2":
-            hsvVals = orange2
-        elif args["ballcolor"] ==  "orange3":
-            hsvVals = orange3
-        elif args["ballcolor"] ==  "orange4":
-            hsvVals = orange4
-        elif args["ballcolor"] ==  "green":
-            hsvVals = green 
-        elif args["ballcolor"] ==  "green2":
-            hsvVals = green2               
-        elif args["ballcolor"] ==  "red":
-            hsvVals = red             
-        elif args["ballcolor"] ==  "red2":
-            hsvVals = red2             
-        else:
-            hsvVals = yellow
-
-        if args["ballcolor"] is not None:
-            print("Ballcolor: "+str(args["ballcolor"]))
-else:
-    hsvVals = customhsv
-    print("Custom HSV Values set in config.ini")
+if args.get("ballcolor", False):
+    if args["ballcolor"] == "white":
+        hsvVals = white
+    elif args["ballcolor"] == "white2":
+        hsvVals = white2
+    elif args["ballcolor"] ==  "yellow":
+        hsvVals = yellow 
+    elif args["ballcolor"] ==  "yellow2":
+        hsvVals = yellow2 
+    elif args["ballcolor"] ==  "orange":
+        hsvVals = orange
+    elif args["ballcolor"] ==  "orange2":
+        hsvVals = orange2
+    elif args["ballcolor"] ==  "orange3":
+        hsvVals = orange3
+    elif args["ballcolor"] ==  "orange4":
+        hsvVals = orange4
+    elif args["ballcolor"] ==  "green":
+        hsvVals = green 
+    elif args["ballcolor"] ==  "green2":
+        hsvVals = green2               
+    elif args["ballcolor"] ==  "red":
+        hsvVals = red             
+    elif args["ballcolor"] ==  "red2":
+        hsvVals = red2             
+    else:
+        hsvVals = yellow
 
 
+if args["ballcolor"] is not None:
+    print("Ballcolor: "+str(args["ballcolor"]))
 
     
 calibrationcolor = [("white",white),("white2",white2),("yellow",yellow),("yellow2",yellow2),("orange",orange),("orange2",orange2),("orange3",orange3),("orange4",orange4),("green",green),("green2",green2),("red",red),("red2",red2)]
@@ -328,22 +329,18 @@ pts = deque(maxlen=args["buffer"])
 tims = deque(maxlen=args["buffer"])
 fpsqueue = deque(maxlen=240)
 
-# Set this up in config.ini.
 webcamindex = 0
-
+ 
 message = ""
 
-
 # if a webcam index is supplied, grab the reference
-if args.get("camera", False):
-    webcamindex = args["camera"]
-
-# if a video path was not supplied, grab the reference
-# to the webcam
-if not args.get("video", False):
-    webcamindex = cam_webcamindex 
+if args.get("camera", False) or parser.has_option('camera_properties','webcamindex'):
+    if parser.has_option('camera_properties','webcamindex'):
+        webcamindex=int(parser.get('camera_properties','webcamindex'))
+    else:
+        webcamindex = int(args["camera"])
     if mjpegenabled == 0:
-        vs = cv2.VideoCapture(webcamindex + cv2.CAP_DSHOW)
+        vs = cv2.VideoCapture(webcamindex)
     else:
         vs = cv2.VideoCapture(webcamindex + cv2.CAP_DSHOW)
         # Check if FPS is overwritten in config
@@ -368,30 +365,64 @@ if not args.get("video", False):
         print("FourCC: "+str(vs.get(cv2.CAP_PROP_FOURCC)))
         print("FPS: "+str(vs.get(cv2.CAP_PROP_FPS)))
 else:
-    vs = cv2.VideoCapture(args["video"])
-    videofile = True
-
-
-
-
-
+    if args.get("video",False):
+        printf("How did I get here")
+    else:  
+        vs = cv2.VideoCapture(args["video"])
+        videofile = True
 
 # Get video metadata
-
 video_fps = vs.get(cv2.CAP_PROP_FPS)
 height = vs.get(cv2.CAP_PROP_FRAME_HEIGHT)
 width = vs.get(cv2.CAP_PROP_FRAME_WIDTH)
-saturation = vs.get(cv2.CAP_PROP_SATURATION)
-exposure = vs.get(cv2.CAP_PROP_EXPOSURE)
 
+# If playing back a video, don't bother with the camera stuff.
+if videofile != True:
+    brightness = vs.get(cv2.CAP_PROP_BRIGHTNESS)
+    contrast = vs.get(cv2.CAP_PROP_CONTRAST)
+    hue = vs.get(cv2.CAP_PROP_HUE)
+    saturation = vs.get(cv2.CAP_PROP_SATURATION)
+    exposure = vs.get(cv2.CAP_PROP_EXPOSURE)
+    auto_exposure = vs.get(cv2.CAP_PROP_AUTO_EXPOSURE)
+    gamma = vs.get(cv2.CAP_PROP_GAMMA)
+    gain = vs.get(cv2.CAP_PROP_GAIN)
+
+    # setup camera properties if any.
+    if cam_exposure != 0.0:
+        vs.set(cv2.CAP_PROP_EXPOSURE, cam_exposure)
+        exposure = vs.get(cv2.CAP_PROP_EXPOSURE)
+    if cam_autoexposure != 0.0:
+        vs.set(cv2.CAP_PROP_AUTO_EXPOSURE, cam_autoexposure)
+        auto_exposure = vs.get(cv2.CAP_PROP_AUTO_EXPOSURE)
+    if cam_brightness != 0.0:
+        vs.set(cv2.CAP_PROP_BRIGHTNESS, cam_brightness)
+        brightness = vs.get(cv2.CAP_PROP_BRIGHTNESS)
+    if cam_contrast!= 0.0:
+        vs.set(cv2.CAP_PROP_CONTRAST, cam_contrast)
+        contrast = vs.get(cv2.CAP_PROP_CONTRAST)        
+    if cam_hue != 0.0:
+        vs.set(cv2.CAP_PROP_HUE, cam_hue)
+        hue = vs.get(cv2.CAP_PROP_HUE)
+    if cam_saturation != 0.0:
+        vs.set(cv2.CAP_PROP_SATURATION, cam_saturation)
+        saturation = vs.get(cv2.CAP_PROP_SATURATION)
+    if cam_gamma != 0.0:
+        vs.set(cv2.CAP_PROP_GAMMA, cam_gamma)
+        gamma = vs.get(cv2.CAP_PROP_GAMMA)
+    if cam_gain != 0.0:
+        vs.set(cv2.CAP_PROP_GAIN, cam_gain)
+        gain = vs.get(cv2.CAP_PROP_GAIN)
+    
 print("video_fps: "+str(video_fps))
 print("height: "+str(height))
 print("width: "+str(width))
-print("saturation: "+str(saturation))
-print("exposure: "+str(exposure))
-
-
-
+if videofile != True:    
+    print("hue: "+str(hue))
+    print("saturation: "+str(saturation))
+    print("exposure: "+str(exposure))
+    print("auto_exposure: "+str(auto_exposure))
+    print("gamma: "+str(gamma))
+    print("gain: "+str(gain))
 
 if type(video_fps) == float:
     if video_fps == 0.0:
@@ -403,14 +434,11 @@ if type(video_fps) == float:
         new_fps = []
         new_fps.append(video_fps)
     video_fps = new_fps
-
-
+        
 # we are using x264 codec for mp4
 fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 #out1 = cv2.VideoWriter('Ball-New.mp4', apiPreference=0, fourcc=fourcc,fps=video_fps[0], frameSize=(int(width), int(height)))
 out2 = cv2.VideoWriter('Calibration.mp4', apiPreference=0, fourcc=fourcc,fps=120, frameSize=(int(width), int(height)))
-
-
 
 def decode(frame):
     left = np.zeros((400,632,3), np.uint8)
@@ -543,6 +571,14 @@ def setDarkness(value):
     parser.write(open(CFG_FILE, "w"))
     pass    
 
+def setHue(value):
+    print(value)    
+    global hue
+    hue = int(value)
+    parser.set('putting', 'hue', str(hue))
+    parser.write(open(CFG_FILE, "w"))
+    pass    
+
 def GetAngle (p1, p2):
     x1, y1 = p1
     x2, y2 = p2
@@ -657,6 +693,9 @@ while True:
                     ret, frame = vs.read()
                 cv2.putText(frame,"Calibration Mode:",(200,100),cv2.FONT_HERSHEY_SIMPLEX,0.5,(0, 0, 255)) 
 
+        # handle the frame from VideoCapture or VideoStream
+        # frame = frame[1] if args.get("video", False) else frame
+
         # if we are viewing a video and we did not grab a frame,
         # then we have reached the end of the video
         if frame is None:
@@ -669,7 +708,7 @@ while True:
             break
 
     origframe = frame.copy()
-  
+    
     
     cv2.normalize(frame, frame, 0-darkness, 255-darkness, norm_type=cv2.NORM_MINMAX)
        
@@ -690,17 +729,7 @@ while True:
     
     # Find the Color Ball
     
-    imgColor, mask = myColorFinder.update(hsv, hsvVals)    
-    newHSV = hsvVals
-    
-    if hsvVals != newHSV:
-        print(newHSV)
-        parser.set('putting', 'customhsv', str(newHSV)) #['hmin']+newHSV['smin']+newHSV['vmin']+newHSV['hmax']+newHSV['smax']+newHSV['vmax']))
-        parser.write(open(CFG_FILE, "w"))
-        hsvVals = newHSV
-        print("HSV values changed - Custom Color Set to config.ini")
-
-
+    imgColor, mask = myColorFinder.update(hsv, hsvVals)
 
     mask = mask[y1:y2, sx1:640]
 
@@ -866,23 +895,25 @@ while True:
                                         print("Ball Left. Position: "+str(center))
                                         left = True
                                         endPos = center
-# FISHEYE                                        
+
                                         # CBS: This is where we do fisheye correction on the two corredinates (startPos, and endPos).
                                         # This will create Two new positions (fstartPos, and fendPos)
-                                        if K != none:
-                                              start_distortPoints=np.array([startPos[0], startPos[1]], dtype=np.float32)
-                                              end_distortPoints = np.array([endPos[0], endPos[1]], dtype=np.float32)
+                                        if K_test == 1:
+                                              spts=[(startPos[0], startPos[1]),(endPos[0],endPos[1])]
+                                              print("start and end position: "+str(spts))
+                                              
+                                              points = np.array([(*loc, 1) for loc in spts])
                                               # Undistorting the points using OpenCV's undistortPoints() function
-                                              start_undistortedPoints, _ = cv2.fisheye.undistortPoints(start_distortedPoints, K, D, newCameraMatrix=scaled_K)[0]
-                                              end_undistortedPoints , _ = cv2.fisheye.undistortPoints(end_distortedPoints, K, D, newCameraMatrix=scaled_K)[0]
-                                              print("Old Start Position: "+str(startPOS)+" Old End Position: "+str(endPos))
-                                              print("Nwe Start Position: "+str(start_undistortedPoints)+" New End Position: "+str(end_undistortedPoints))
-                                              startPos = start_undistortedPoints
-                                              endPos = end_undistortedPoints
+                                              undistorted_pts = cv2.fisheye.undistortPoints(points, K, D)
+                                              undistorted_locations = [(int(x/w), int(y/w)) for x, y, w in undistorted_pts]
+                                              print("Undistorted start end  : "+str(undistorted_locations))
+                                              undistorted_locations = undistorted_locations.astype(np.int64)
+                                              startPos = undistorted_locations[0]
+                                              endPos = undistorted_locations[1]
+                                              print("startPos="+str(startPos)+" endPos="+str(endPos)) 
                                         else:
                                               pass
-                                                  
-# ENDFISHEYE
+
                                         # calculate the distance traveled by the ball in pixel
                                         a = endPos[0] - startPos[0]
                                         b = endPos[1] - startPos[1]
@@ -1070,7 +1101,8 @@ while True:
     # show main putting window
 
     outputframe = resizeWithAspectRatio(frame, width=int(args["resize"]))
-    cv2.imshow("Putting View: Press q to exit / a for adv. settings / v=video w=write", outputframe)
+    # CB: Show the video config, w=write video_config to config.ini
+    cv2.imshow("Putting View: Press q to exit / d=debug a=Advanced / v=video, w=write_video", outputframe)
     
     
     #cv2.moveWindow("Putting View: Press q to exit / a for adv. settings", 20,20)
@@ -1082,6 +1114,7 @@ while True:
     if args.get("debug", False):
         cv2.imshow("MaskFrame", mask)
         cv2.imshow("Original", origframe)
+    
     
     key = cv2.waitKey(1) & 0xFF
     # if the 'q' key is pressed, stop the loop
@@ -1105,8 +1138,7 @@ while True:
         args["debug"] = 1
         myColorFinder = ColorFinder(True)
         myColorFinder.setTrackbarValues(hsvVals)
-
-    #CB: Added a way to store video properties
+#CB: Added a way to store video properties
     if key == ord("v"):
         vs.set(cv2.CAP_PROP_SETTINGS, 1)
     if key == ord("w"):
@@ -1116,24 +1148,27 @@ while True:
         hue = vs.get(cv2.CAP_PROP_HUE)
         saturation = vs.get(cv2.CAP_PROP_SATURATION)
         exposure = vs.get(cv2.CAP_PROP_EXPOSURE)
-        auto_exposure = vs.get(cv2.CAP_PROP_AUTO_EXPOSURE)
+        autoexposure = vs.get(cv2.CAP_PROP_AUTO_EXPOSURE)
         gamma = vs.get(cv2.CAP_PROP_GAMMA)
         gain = vs.get(cv2.CAP_PROP_GAIN)
 
-        if not parser.has_section('camera_properties'):
+        if parser.has_section('camera_properties'):
+            pass
+        else:
             parser.add_section('camera_properties')
+        parser.set('camera_properties', 'exposure', str(exposure))
+        parser.set('camera_properties', 'auto_exposure', str(auto_exposure))
         parser.set('camera_properties', 'brightness', str(brightness))
         parser.set('camera_properties', 'contrast', str(contrast))
         parser.set('camera_properties', 'hue', str(hue))
         parser.set('camera_properties', 'saturation', str(saturation))
-        parser.set('camera_properties', 'exposure', str(exposure))
-        parser.set('camera_properties', 'auto_exposure', str(auto_exposure))
         parser.set('camera_properties', 'gamma', str(gamma))
         parser.set('camera_properties', 'gain', str(gain))
         parser.set('camera_properties', 'webcamindex', str(webcamindex))
         with open(CFG_FILE, 'w') as config_file:
-           parser.write(config_file)
+          parser.write(config_file)
 
+          
     if actualFPS > 1:
         grayPreviousFrame = cv2.cvtColor(previousFrame, cv2.COLOR_BGR2GRAY)
         grayOrigframe = cv2.cvtColor(origframe, cv2.COLOR_BGR2GRAY)
