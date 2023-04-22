@@ -690,8 +690,7 @@ while True:
     
     # Find the Color Ball
     
-    imgColor, mask = myColorFinder.update(hsv, hsvVals)    
-    newHSV = hsvVals
+    imgColor, mask, newHSV = myColorFinder.update(hsv, hsvVals)    
     
     if hsvVals != newHSV:
         print(newHSV)
