@@ -869,12 +869,21 @@ while True:
                                         # CBS: This is where we do fisheye correction on the two corredinates (startPos, and endPos).
                                         # This will create Two new positions (fstartPos, and fendPos)
                                         if K_test == 1:
-                                              distortPoints = np.array([[startPos[0], startPos[1]],[endPos[0], endPos[1]]], dtype=np.float32)
+                                              distortedPoints = np.array([[startPos[0], startPos[1]],[endPos[0], endPos[1]]]).astype('float32').reshape(-1,1,2)
                                               # Undistorting the points using OpenCV's undistortPoints() function
-                                              start_undistortedPoints, _ = cv2.fisheye.undistortPoints(distortedPoints, K, D)[0]
-                                              end_undistortedPoints , _ = cv2.fisheye.undistortPoints(distortedPoints, K, D)[1]
-                                              print("Old Start Position: "+str(startPos)+" Old End Position: "+str(endPos))
-                                              print("Nwe Start Position: "+str(start_undistortedPoints)+" New End Position: "+str(end_undistortedPoints))
+                                              undistortedPoints = (cv2.fisheye.undistortPoints(distortedPoints, K, D, P=scaled_K).reshape(-1,2)).astype(int)
+                                              print (undistortedPoints)
+                                              start_undistortedPoints = tuple(undistortedPoints[0])
+                                              end_undistortedPoints = tuple(undistortedPoints[1])
+                                              # calculate the distance traveled by the ball in pixel. Once it all looks good, remove the debug code
+                                              a = endPos[0] - startPos[0]
+                                              b = endPos[1] - startPos[1]
+                                              distanceTraveled = math.sqrt( a*a + b*b )
+                                              c = end_undistortedPoints[0] - start_undistortedPoints[0]
+                                              d = end_undistortedPoints[1] - start_undistortedPoints[1]
+                                              new_distanceTraveled = math.sqrt( c*c + d*d )  
+                                              print("Old Start Position: "+str(startPos)+" Old End Position: "+str(endPos)+ " Old Distance: "+str(distanceTraveled))
+                                              print("New Start Position: "+str(start_undistortedPoints)+" New End Position: "+str(end_undistortedPoints)+" New Distance: "+str(new_distanceTraveled))
                                               startPos = start_undistortedPoints
                                               endPos = end_undistortedPoints
                                         else:
