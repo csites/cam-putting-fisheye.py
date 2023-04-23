@@ -1,5 +1,18 @@
 # Webcam based putting simulation for GSPRO utilizing the R10 connector:
 
+The variation of the putting simulation has a correction for fisheye lens. You can use it just like Alleexx's original putting, simulation without 
+change.  If you desire to test the fisheye, you go to the fisheye subdirectory and run a camera calibration program which looks for a chessboard and 
+reads it from multiple locations to create a lens distortion model.  It creates 3 arrays which are stored in the config.ini under a section called '[fisheye]' and writes the
+K, D, and scaled_K arrays there. You can test you calibration by running the undistort_simple_cam.py which reads the K,D and scaled_K lens model data from the config.ini and applies it
+to a live undistortion camera view.  The fisheye camera correction routines are a little more complicated to setup that Alleexx's original code because
+of the need for a checkerboard pattern.  To help with IR camera, I've added routines that allow you to record all of the camera parameters you find with 
+Alleexx's advanced control screen include value like exposure, the auto_exposure switch, hue, staturation, brightness, whitebalance, gamma, gain etc. 
+These can also be writen into the config.ini file under the section '[camera parameters]'.   It's also optional.  
+As a test, this program has already been calibrated using an IR camera with a 3.6mm fisheye lens (~90 degree field of view).  To return it to alleexx's original code, simply 
+remove the '[fisheye]' section inf the config.ini.  Once the correction is applied to starting and ending positions of the ball, it proceeds to alleexx's code and calculates a 
+corrected HLA and MPH of the putt for as captured with a fisheye lens camera.
+  
+ 
 Calculation includes BallSpeed in MPH and HLA of the putt. Initial insperation on the solution comes from natter where I forked the initial OpenCV code.
 
 These connectors integrate the putting app to use in GSPRO
