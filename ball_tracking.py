@@ -200,6 +200,12 @@ record = True
 
 videofile = False
 
+# a_key_pressed (remove duplicate advanced screens for multipla a presses)
+a_key_pressed = False 
+# For fisheye camera undistorted video frame.  Balance for the undistort video
+undistort_video = False
+flip_video = False
+balance=1 
 
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
@@ -371,27 +377,17 @@ else:
     vs = cv2.VideoCapture(args["video"])
     videofile = True
 
-
-
-
-
-
 # Get video metadata
-
 video_fps = vs.get(cv2.CAP_PROP_FPS)
 height = vs.get(cv2.CAP_PROP_FRAME_HEIGHT)
 width = vs.get(cv2.CAP_PROP_FRAME_WIDTH)
 saturation = vs.get(cv2.CAP_PROP_SATURATION)
 exposure = vs.get(cv2.CAP_PROP_EXPOSURE)
-
 print("video_fps: "+str(video_fps))
 print("height: "+str(height))
 print("width: "+str(width))
 print("saturation: "+str(saturation))
 print("exposure: "+str(exposure))
-
-
-
 
 if type(video_fps) == float:
     if video_fps == 0.0:
@@ -602,7 +598,15 @@ while True:
         # flip image on y-axis
         if flipImage == 1 and videofile == False:	
             frame = cv2.flip(frame, flipImage)
-        
+        if flip_video == True:
+            frame = cv2.flip(frame, 1)  
+# FISHEYE View           
+        if undistort_video == True:
+            dim3 = dim2 = frame.shape[:2][::-1]
+            new_K = cv2.fisheye.estimateNewCameraMatrixForUndistortRectify(scaled_K, D, dim2, np.eye  (3), balance=balance)
+            map1, map2 = cv2.fisheye.initUndistortRectifyMap(scaled_K, D, np.eye(3), new_K, dim3, cv2.CV_16SC2)
+            frame = cv2.remap(frame, map1, map2, interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
+# FISHEYE View  
         if args["ballcolor"] == "calibrate":
             if record == False:
                 if args.get("debug", False):
@@ -1077,7 +1081,7 @@ while True:
     # show main putting window
 
     outputframe = resizeWithAspectRatio(frame, width=int(args["resize"]))
-    cv2.imshow("Putting View: Press q to exit / a for adv. settings / v=video w=write", outputframe)
+    cv2.imshow("Putting View: Press q to exit / a=adv f=flip u=undistort v=video w=write_video", outputframe)
     
     
     #cv2.moveWindow("Putting View: Press q to exit / a for adv. settings", 20,20)
@@ -1095,19 +1099,23 @@ while True:
     if key == ord("q"):
         break
     if key == ord("a"):
-        cv2.namedWindow("Advanced Settings")
-        if mjpegenabled != 0:
-            vs.set(cv2.CAP_PROP_SETTINGS, 37)  
-        cv2.resizeWindow("Advanced Settings", 1000, 400)
-        cv2.createTrackbar("X Start", "Advanced Settings", int(sx1), 640, setXStart)
-        cv2.createTrackbar("X End", "Advanced Settings", int(sx2), 640, setXEnd)
-        cv2.createTrackbar("Y Start", "Advanced Settings", int(y1), 460, setYStart)
-        cv2.createTrackbar("Y End", "Advanced Settings", int(y2), 460, setYEnd)
-        cv2.createTrackbar("Radius", "Advanced Settings", int(ballradius), 50, setBallRadius)
-        cv2.createTrackbar("Flip Image", "Advanced Settings", int(flipImage), 1, setFlip)
-        cv2.createTrackbar("MJPEG", "Advanced Settings", int(mjpegenabled), 1, setMjpeg)
-        cv2.createTrackbar("FPS", "Advanced Settings", int(overwriteFPS), 240, setOverwriteFPS)
-        cv2.createTrackbar("Darkness", "Advanced Settings", int(darkness), 255, setDarkness)
+        if not a_key_pressed:
+            cv2.namedWindow("Advanced Settings")
+            if mjpegenabled != 0:
+                vs.set(cv2.CAP_PROP_SETTINGS, 37)  
+            cv2.resizeWindow("Advanced Settings", 1000, 400)
+            cv2.createTrackbar("X Start", "Advanced Settings", int(sx1), 640, setXStart)
+            cv2.createTrackbar("X End", "Advanced Settings", int(sx2), 640, setXEnd)
+            cv2.createTrackbar("Y Start", "Advanced Settings", int(y1), 460, setYStart)
+            cv2.createTrackbar("Y End", "Advanced Settings", int(y2), 460, setYEnd)
+            cv2.createTrackbar("Radius", "Advanced Settings", int(ballradius), 50, setBallRadius)
+            cv2.createTrackbar("Flip Image", "Advanced Settings", int(flipImage), 1, setFlip)
+            cv2.createTrackbar("MJPEG", "Advanced Settings", int(mjpegenabled), 1, setMjpeg)
+            cv2.createTrackbar("FPS", "Advanced Settings", int(overwriteFPS), 240, setOverwriteFPS)
+            cv2.createTrackbar("Darkness", "Advanced Settings", int(darkness), 255, setDarkness)
+        else:
+            a_key_pressed = true
+            
     if key == ord("d"):
         args["debug"] = 1
         myColorFinder = ColorFinder(True)
@@ -1140,7 +1148,17 @@ while True:
         parser.set('camera_properties', 'webcamindex', str(webcamindex))
         with open(CFG_FILE, 'w') as config_file:
            parser.write(config_file)
-
+    if key == ord("u"):
+        if not  undistort_video:
+          undistort_video = True;
+        else:
+          undistort_video = False;
+    if key == ord("f"):
+        if not  flip_video:
+          flip_video = True;
+        else:
+          flip_video = False;
+  
     if actualFPS > 1:
         grayPreviousFrame = cv2.cvtColor(previousFrame, cv2.COLOR_BGR2GRAY)
         grayOrigframe = cv2.cvtColor(origframe, cv2.COLOR_BGR2GRAY)
