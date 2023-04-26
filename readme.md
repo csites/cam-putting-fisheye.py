@@ -1,17 +1,26 @@
-# Webcam based putting simulation for GSPRO utilizing the R10 connector:
+# Webcam based putting simulation with fisheye correction for GSPRO utilizing the R10 connector:
 
-The variation of the putting simulation has a correction for fisheye lens. You can use it just like Alleexx's original putting, simulation without 
-change.  If you desire to test the fisheye, you go to the fisheye subdirectory and run a camera calibration program which looks for a chessboard and 
-reads it from multiple locations to create a lens distortion model.  It creates 3 arrays which are stored in the config.ini under a section called '[fisheye]' and writes the
-K, D, and scaled_K arrays there. You can test you calibration by running the undistort_simple_cam.py which reads the K,D and scaled_K lens model data from the config.ini and applies it
-to a live undistortion camera view.  The fisheye camera correction routines are a little more complicated to setup that Alleexx's original code because
-of the need for a checkerboard pattern.  To help with IR camera, I've added routines that allow you to record all of the camera parameters you find with 
-Alleexx's advanced control screen include value like exposure, the auto_exposure switch, hue, staturation, brightness, whitebalance, gamma, gain etc. 
-These can also be writen into the config.ini file under the section '[camera parameters]'.   It's also optional.  
+## ALL Abour fisheye lens correction.
+
+This variation of the alleexx putting simulation (ball_tracking.py) provides a correction for fisheye lens. You can use it just like Alleexx's original putting, simulation without change by simply removing the '[fisheye]' section in config.ini file.  If you desire to test or see what the fisheye correction does, itis already setup and calibrated to a 3.6mm fisheye lens. If you use a standard camera, it will provide a distorted view, which is the lens correction being applied to you non-distorting lens.  I've provided a number of addional support utilities in a subdirectory called fisheye. The first program you will want to use is one to help allign the camera. For a fisheye lens, it performs best with the putting line directly on the middle row. So for example if you have a 640wx480h image, you will want to allign you putting path to be on 240h line. The program for this is 'fisheye/simple_cam_allign.py'.  If the bending of your fisheye camera isn't extreme, Alleexx's orginal code should give a good estimate of ball speed and horizontal launch angle (HLA) with just that simple allignment.  
+
+If you have a fisheye camera and want to build your own lens model, the processes is a little more involved.  The first step is to calibrate the camera and this is done  
+by taking a series of snapshot images of a chessboard in different places in camera's fiield of view.  So first we need to allign the camera. I've provided a program to help with this. The program 'fisheye\Snapshot2.py' is used for this purpose. Given a webcam #, and image count, it will take a snapshot and stores a labled image_##.jpg into the folder 'fisheye\Calibrations', it then pause for 5 seconds (so you can move the chessboard) and repeats process for how ever many images you've specified.    
+
+<img src="fisheye/Calibrations/image_1.jpg">
+
+Once you have your set of calibration images; we need to run a program that creats a model of the lens distortion.  The program that performs that task is 'fisheye\calibration_fisheye2.py'. 
+This  calibration program which looks for a chessboard image reads it from multiple locations to create a lens distortion model.  It creates 3 arrays which are stored in the .\config.ini under a section called '[fisheye]' and writes three arrays K, D, and scaled_K in that section.  You can test the calibration arrays by running the 'fisheye\undistort_simple_cam.py' which reads the K,D and scaled_K lens model from the config.ini and applies it to a live camera view.  It should straighten out any lines or edges that are bowed from the fisheye lens.  If you are statisfied with the calibration then you can try the .\ball_tracking program.
+
+.\ball_tracking.py will read the '[fisheye]' K, D, and scaled_K paramters in the .\config.ini file and apply use them to apply corrections to the X,Y coordinates of the ball tracking points. 
+It will use the modified points to then calculate ball_speed and HLA. The routines that undistort the points is only applied if it sees the K array under the '[fisheye]' section. 
+
+The fisheye camera correction routines are a little more complicated to setup that Alleexx's original code and it has a number of new options.  One problem I've had, is I'm using an ELP nighttime IR camera.  Unlike, a typical webcam used in Alleexx's code, the IR cam can use any color golfball.  They all look like a white ball in color.   However, it does require tweeking some parameters like the exposure, hue, gamma, and gain of the camera. To help with IR camera, I've added routines that allow you to record all of the camera parameters like exposure, the auto_exposure switch, hue, staturation, brightness, whitebalance, gamma, gain etc. These can also be writen into the .\config.ini file under the section '[camera parameters]'. By pressing 'v' it will bring up the camera control dialog that allows you to change and tweek these values live. Once set you press 'w' and it will write the values into a the '[camera parameters]' section.  When the program is run again, it will read and setup the '[camera parameters]'.  It's also optional.  Another option is to let you see the undistorted view that's being used by the fisheye correction.  Pressing 'u' will toggle between the undistorted view and the normal view of the live video stream.
+.  
 As a test, this program has already been calibrated using an IR camera with a 3.6mm fisheye lens (~90 degree field of view).  To return it to alleexx's original code, simply 
-remove the '[fisheye]' section inf the config.ini.  Once the correction is applied to starting and ending positions of the ball, it proceeds to alleexx's code and calculates a 
-corrected HLA and MPH of the putt for as captured with a fisheye lens camera.
-  
+remove the '[fisheye]' and '[camera parameter]' sections in the .\config.ini.  For convience, I've include executable binaries of the python code for all of the programs mentioned under the \dist folder.
+To run the new ball_tracking you would run it like .\dist\ball_tracking.exe and it will use the .\config.ini for configuration.  For the other programs, you need to cd into the dist folder. Those expect to find the config.ini in ..\config.ini. 
+
  
 Calculation includes BallSpeed in MPH and HLA of the putt. Initial insperation on the solution comes from natter where I forked the initial OpenCV code.
 
@@ -40,6 +49,9 @@ Unpack the release zip and run ball_tracking.exe [-c <ballcolor OR calibrate> -w
   - overwrite the detected FPS with a target FPS setting if not detected correctly - not all cameras support setting FPS through OpenCV
   - darken the images in case your webcam settings do not allow for this
   - beta option of ps4 enabling is done in config.ini directly
+  - Use the new 'v' option to adjust camera parameters (pressing 'a' will bring this panel up too).
+  - Use the new 'w' to write out the camera parameters to the config.ini
+  - Use the new 'u' to toggle between the undistorted corrected video stream and the normal video stream. 
 - Once identified the ball should get a red circle fully around. If it is smaller or bigger than the ball it will not reflect the right putting speed. It must match the ball dimensions as best as it can.
 - If the ball is not detected try adjusting the light situation or your webcam brightness settings or try a different ball color option (hit q to exit the putting simulator and start again with another Ball Color)
 - The putt needs to cross the red rectangle and needs to leave on the other side
