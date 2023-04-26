@@ -5,7 +5,7 @@
 
     Once you have your camera aligned and fixed in place; you will need to calibrate for the for the fisheye lens distortion.   This is done with the program 'Snapshots2.py' We need to have checkerboard pattern printed out (or use a foldup chessboard).  Run the Snapshots2.py program, give it the camera number (0-4) and the number of snapshots you want to make.  Place the chessboard in the view of the cam, and let the program take a snapshot. It will display the snapshot, you then have 5 seconds to move the chessboard to a new location, and repeat. If you can try to get an a few images with the chessboard close to the screen, and moved back.  All the images will be stored in 'fisheye/Calibrations/ subdir.  You can create your own chessboard pattern created at this site (if you have a printer of course).  https://markhedleyjones.com/projects/calibration-checkerboard-collection and create/download and print a custom chessboard pattern for the typepaper your using; default is A4, Custom Standard Letter is 215mm x 279mm. 30mm squares works OK. 
 
-For further info on the calibration used, please see this great video: https://www.youtube.com/watch?v=-9He7Nu3u8s
+For further info on the calibration used, please see : https://www.youtube.com/watch?v=-9He7Nu3u8s
 
     Note: if your using an IR camera with fisheye, the paper can appear too bright close up. If that is the case you may need to turn off you IR lighting, and use a standard camera mode. 
 
