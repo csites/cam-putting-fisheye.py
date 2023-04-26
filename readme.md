@@ -6,8 +6,9 @@ This variation of the alleexx putting simulation (ball_tracking.py) provides a c
 
 If you have a fisheye camera and want to build your own lens model, the processes is a little more involved.  The first step is to calibrate the camera and this is done by taking a series of snapshot images of a chessboard in different places in camera's fiield of view.  So first we need to allign the camera. I've provided a program to help with this. The program 'fisheye\Snapshot2.py' is used for this purpose. Given a webcam #, and image count, it will take a snapshot and stores a labled image_##.jpg into the folder 'fisheye\Calibrations', it then pause for 5 seconds (so you can move the chessboard) and repeats process for how ever many images you've specified.    
 
-<img src="fisheye/Calibrations/image_2.jpg">
+<img src="fisheye/Calibrations/image_34.jpg">
 Here is a detailed video that explains all of the math behind the fisheye lens correction. https://www.youtube.com/watch?v=-9He7Nu3u8s
+
 
 Once you have your set of calibration images; we need to run a program that creats a model of the lens distortion.  The program that performs that task is 'fisheye\calibration_fisheye2.py'. 
 This  calibration program which looks for a chessboard image reads it from multiple locations to create a lens distortion model.  It creates 3 arrays which are stored in the .\config.ini under a section called '[fisheye]' and writes three arrays K, D, and scaled_K in that section.  You can test the calibration arrays by running the 'fisheye\undistort_simple_cam.py' which reads the K,D and scaled_K lens model from the config.ini and applies it to a live camera view.  It should straighten out any lines or edges that are bowed from the fisheye lens.  If you are statisfied with the calibration then you can try the .\ball_tracking program.
