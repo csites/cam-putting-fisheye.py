@@ -12,16 +12,6 @@ print("")
 print("This program is used to capture a number of images of the checkerboard pattern you printed.")
 print("It will beep and pause for 5 seconds before each snapshot.")
 print("")
-num_images = input("How many images would you like to take? (Enter a number between 1-25): ")
-
-try:
-    num_images = int(num_images)
-    if num_images < 1 or num_images > 25:
-        raise ValueError("Number of images must be between 1-25")
-except ValueError:
-    print("Invalid input. Please enter a number between 1-25.")
-    exit()
-
 camera_num = input("Enter camera number (0 to 4): ")
 
 try:
@@ -31,6 +21,18 @@ try:
 except ValueError:
     print("Invalid input. Please enter a number between 0-4.")
     exit()
+print("Move your chessboard to different locations until you have all of the camera covered")    
+num_images = input("How many images would you like to take? (Enter a number between 1-125): ")
+
+try:
+    num_images = int(num_images)
+    if num_images < 1 or num_images > 125:
+        raise ValueError("Number of images must be between 1-125")
+except ValueError:
+    print("Invalid input. Please enter a number between 1-25.")
+    exit()
+
+
     
 # Set up OpenCV camera capture
 cap = cv2.VideoCapture(camera_num)
