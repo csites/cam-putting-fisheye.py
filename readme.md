@@ -22,9 +22,9 @@ The fisheye camera correction routines are a little more complicated to setup th
 As a test, this program has already been calibrated using an IR camera with a 3.6mm fisheye lens (~90 degree field of view).  To return it to alleexx's original code, simply 
 remove the '[fisheye]' and '[camera parameter]' sections in the .\config.ini.  For convience, I've include executable binaries of the python code for all of the programs mentioned under the \dist folder.
 To run the new ball_tracking you would run it like .\dist\ball_tracking.exe and it will use the .\config.ini for configuration.  For the other programs, you need to cd into the dist folder. Those expect to find the config.ini in ..\config.ini. 
-
- 
-Calculation includes BallSpeed in MPH and HLA of the putt. Initial insperation on the solution comes from natter where I forked the initial OpenCV code.
+<p>
+</p> 
+The end result is the correct calculation of BallSpeed in MPH and HLA of the putt. Initial insperation on the solution comes from natter where I forked the initial OpenCV code.
 
 These connectors integrate the putting app to use in GSPRO
 
