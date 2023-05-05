@@ -17,7 +17,7 @@ def str2array(s):
     return np.array(ast.literal_eval(s))
 
 parser = ConfigParser()
-osCFG_FILE=os.path.join(os.pardir, 'config.ini')
+osCFG_FILE='config.ini'
 parser.read(osCFG_FILE)
 
 # Read Fisheye len correction matrixes from config.ini  

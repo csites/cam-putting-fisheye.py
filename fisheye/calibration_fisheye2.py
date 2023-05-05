@@ -11,7 +11,6 @@ CHECKERBOARD = (7,7)
 
 subpix_criteria = (cv2.TERM_CRITERIA_EPS+cv2.TERM_CRITERIA_MAX_ITER, 30, 0.1)
 calibration_flags = cv2.fisheye.CALIB_RECOMPUTE_EXTRINSIC+cv2.fisheye.CALIB_CHECK_COND+cv2.fisheye.CALIB_FIX_SKEW
-#calibration_flags = cv2.fisheye.CALIB_RECOMPUTE_EXTRINSIC+cv2.fisheye.CALIB_FIX_SKEW
 objp = np.zeros((1, CHECKERBOARD[0]*CHECKERBOARD[1], 3), np.float32)
 objp[0,:,:2] = np.mgrid[0:CHECKERBOARD[0], 0:CHECKERBOARD[1]].T.reshape(-1, 2)
 
@@ -164,7 +163,7 @@ with open("fisheye_calibration_data.json", "w") as f:
 # Create an entry in ../config.ini 
 # Note. This assume the application is one directory below where the config.ini is located.   
 config = configparser.ConfigParser()
-osFilename=os.path.join(os.pardir, 'config.ini')
+osFilename='config.ini'
 config.read(osFilename)
 if not config.has_section('fisheye'):
     config.add_section('fisheye')
