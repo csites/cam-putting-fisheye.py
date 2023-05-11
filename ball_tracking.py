@@ -35,7 +35,6 @@ ps4=0
 overwriteFPS = 0
 customhsv = {}
 
-
 if parser.has_option('putting', 'startx1'):
     sx1=int(parser.get('putting', 'startx1'))
 else:
@@ -89,6 +88,12 @@ if parser.has_option('putting', 'customhsv'):
     print(customhsv)
 else:
     customhsv={}
+# Local stimp correction factor.   [0.0 to 2.0] 1.0 = default. 
+if parser.has_option('putting', 'stimp'):
+    stimp=float(parser.get('putting', 'stimp'))
+else:
+    stimp=1.0
+    
 # Read Fisheye len correction matrixes from config.ini  
 if parser.has_option('fisheye', 'k'):
     K=str2array(parser.get('fisheye', 'k')) 
@@ -200,8 +205,9 @@ record = True
 
 videofile = False
 
-# a_key_pressed (remove duplicate advanced screens for multipla a presses)
+# a_key_pressed (remove duplicate advanced screens for multipla 'a' and 's' key presses)
 a_key_pressed = False 
+s_key_pressed = False
 # For fisheye camera undistorted video frame.  Balance for the undistort video
 undistort_video = False
 flip_video = False
@@ -539,6 +545,14 @@ def setDarkness(value):
     parser.write(open(CFG_FILE, "w"))
     pass    
 
+def setStimp(value):
+    print(value)    
+    global stimp
+    stimp = float(value)
+    parser.set('putting', 'stimp', str(stimp))
+    parser.write(open(CFG_FILE, "w"))
+    pass    
+
 def GetAngle (p1, p2):
     x1, y1 = p1
     x2, y2 = p2
@@ -598,15 +612,15 @@ while True:
         # flip image on y-axis
         if flipImage == 1 and videofile == False:	
             frame = cv2.flip(frame, flipImage)
-        if flip_video == True:
-            frame = cv2.flip(frame, 1)  
 # FISHEYE View           
         if undistort_video == True:
             dim3 = dim2 = frame.shape[:2][::-1]
             new_K = cv2.fisheye.estimateNewCameraMatrixForUndistortRectify(scaled_K, D, dim2, np.eye  (3), balance=balance)
             map1, map2 = cv2.fisheye.initUndistortRectifyMap(scaled_K, D, np.eye(3), new_K, dim3, cv2.CV_16SC2)
             frame = cv2.remap(frame, map1, map2, interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
-# FISHEYE View  
+# FISHEYE View 
+        if flip_video == True:
+            frame = cv2.flip(frame, 1)  
         if args["ballcolor"] == "calibrate":
             if record == False:
                 if args.get("debug", False):
@@ -906,6 +920,9 @@ while True:
                                             # calculate the speed in MPH
                                             if not timeElapsedSeconds  == 0:
                                                 speed = ((distanceTraveledMM / 1000 / 1000) / (timeElapsedSeconds)) * 60 * 60 * 0.621371
+                                                if stimp:
+                                                    speed *= stimp
+                                                     
                                             # debug out
                                             print("Time Elapsed in Sec: "+str(timeElapsedSeconds))
                                             print("Distance travelled in MM: "+str(distanceTraveledMM))
@@ -1158,7 +1175,16 @@ while True:
           flip_video = True;
         else:
           flip_video = False;
-  
+    if key == ord("s"):
+        if not s_key_pressed:
+            cv2.namedWindow("Local Stimp adjustment Settings")
+            cv2.resizeWindow("Local Stimp Settings [0.0 to 2.0]", 320, 200)
+            cv2.createTrackbar("Local Stimp rating", "Local Stimp", stimp, 2.0, setStimp)
+        else:
+            s_key_pressed = true
+    else:
+        pass
+          
     if actualFPS > 1:
         grayPreviousFrame = cv2.cvtColor(previousFrame, cv2.COLOR_BGR2GRAY)
         grayOrigframe = cv2.cvtColor(origframe, cv2.COLOR_BGR2GRAY)
