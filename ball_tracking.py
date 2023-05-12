@@ -91,7 +91,7 @@ else:
 # Local stimp correction factor.   [0.0 to 2.0] 1.0 = default. 
 if parser.has_option('putting', 'stimp'):
     stimp=float(parser.get('putting', 'stimp'))
-    istimp=int(stimp)
+    istimp=int(stimp * 100.0)
 else:
     stimp=100.0
     istimp=100
@@ -109,11 +109,12 @@ if parser.has_option('fisheye', 'd'):
 if parser.has_option('fisheye', 'scaled_k'):
     scaled_K=str2array(parser.get('fisheye', 'scaled_k'))
     print(scaled_K)
-# Camera properties 
+# Camera properties Exposure: -7 means 2^-7 = 1/(2^7) = 1/128 sec.  A value of -1 = 2^(-1) = 1/(2^1) = 1/2 sec exposure time or 2FPS.
 if parser.has_option('camera_properties','exposure'):
     cam_exposure=float(parser.get('camera_properties','exposure'))
 else:
     cam_exposure=0.0
+ # CAP_PROP_AUTO_EXPOSURE is 0.25 this means manual, 0.75 sets it to automatic (default). *workaround bug*    
 if parser.has_option('camera_properties','auto_exposure'):
     cam_autoexposure=float(parser.get('camera_properties','auto_exposure'))
 else:
@@ -385,17 +386,52 @@ else:
     vs = cv2.VideoCapture(args["video"])
     videofile = True
 
+# Set all the odd camera options
+if parser.has_option('camera_properties','brightness'):
+    vs.set(cv2.CAP_PROP_BRIGHTNESS, cam_brightness )
+if parser.has_option('camera_properties','contrast'):
+    vs.set(cv2.CAP_PROP_CONTRAST, cam_contrast)
+if parser.has_option('camera_properties','hue'):
+    vs.set(cv2.CAP_PROP_HUE, cam_hue)
+if parser.has_option('camera_properties','saturation'):    
+    vs.set(cv2.CAP_PROP_SATURATION, cam_saturation)
+if parser.has_option('camera_properties','exposure'):
+    vs.set(cv2.CAP_PROP_EXPOSURE, cam_exposure)  # -7 means 2^-7 = 1/(2^7) = 1/128 sec.  A value of -1 = 2^(-1) = 1/(2^1) = 1/2 sec exposure time or 2FPS.    
+if parser.has_option('camera_properties','auto_exposure'):
+    if cam_autoexposure == -1:
+        cam_autoexposure = 0.75
+    if cam_autoexposure == 0:
+        cam_autoexposure = 0.25
+    vs.set(cv2.CAP_PROP_AUTO_EXPOSURE, cam_autoexposure) # CAP_PROP_AUTO_EXPOSURE is 0.25 this means manual, 0.75 sets it to automatic *workaround bug*
+if parser.has_option('camera_properties','gamma'):
+    vs.set(cv2.CAP_PROP_GAMMA, cam_gamma)
+if parser.has_option('camera_properties','gain'):
+    vs.set(cv2.CAP_PROP_GAIN, cam_gain)
+
 # Get video metadata
 video_fps = vs.get(cv2.CAP_PROP_FPS)
 height = vs.get(cv2.CAP_PROP_FRAME_HEIGHT)
 width = vs.get(cv2.CAP_PROP_FRAME_WIDTH)
+brightness = vs.get(cv2.CAP_PROP_BRIGHTNESS)
+contrast = vs.get(cv2.CAP_PROP_CONTRAST)
+hue = vs.get(cv2.CAP_PROP_HUE)
 saturation = vs.get(cv2.CAP_PROP_SATURATION)
-exposure = vs.get(cv2.CAP_PROP_EXPOSURE)
+exposure = vs.get(cv2.CAP_PROP_EXPOSURE)  # -7 means 2^-7 = 1/(2^7) = 1/128 sec.  A value of -1 = 2^(-1) = 1/(2^1) = 1/2 sec exposure time or 2FPS.    
+auto_exposure = vs.get(cv2.CAP_PROP_AUTO_EXPOSURE) # CAP_PROP_AUTO_EXPOSURE is 0.25 this means manual, 0.75 sets it to automatic *workaround bug*
+gamma = vs.get(cv2.CAP_PROP_GAMMA)
+gain = vs.get(cv2.CAP_PROP_GAIN)
+
 print("video_fps: "+str(video_fps))
 print("height: "+str(height))
 print("width: "+str(width))
+print("brightness: "+str(brightness))
+print("contrast: "+str(contrast))
+print("hue: "+str(hue))
 print("saturation: "+str(saturation))
 print("exposure: "+str(exposure))
+print("auto_exposure: "+str(auto_exposure))
+print("gamma: "+str(gamma))
+print("gain: "+str(gain))
 
 if type(video_fps) == float:
     if video_fps == 0.0:
@@ -615,7 +651,7 @@ while True:
         if flipImage == 1 and videofile == False:	
             frame = cv2.flip(frame, flipImage)
 # FISHEYE View           
-        if undistort_video == True:
+        if undistort_video == True and K_test == 1:
             dim3 = dim2 = frame.shape[:2][::-1]
             new_K = cv2.fisheye.estimateNewCameraMatrixForUndistortRectify(scaled_K, D, dim2, np.eye  (3), balance=balance)
             map1, map2 = cv2.fisheye.initUndistortRectifyMap(scaled_K, D, np.eye(3), new_K, dim3, cv2.CV_16SC2)
@@ -887,7 +923,8 @@ while True:
                                         endPos = center
 # FISHEYE                                        
                                         # CBS: This is where we do fisheye correction on the two corredinates (startPos, and endPos).
-                                        # This will create Two new positions (fstartPos, and fendPos)
+                                        # This will create Two new positions (fstartPos, and fendPos).  Note.   Need to test undistort view alternative to this.
+                                        # if K_test == 1 and undistort == 0:
                                         if K_test == 1:
                                               distortedPoints = np.array([[startPos[0], startPos[1]],[endPos[0], endPos[1]]]).astype('float32').reshape(-1,1,2)
                                               # Undistorting the points using OpenCV's undistortPoints() function
@@ -923,7 +960,7 @@ while True:
                                             if not timeElapsedSeconds  == 0:
                                                 speed = ((distanceTraveledMM / 1000 / 1000) / (timeElapsedSeconds)) * 60 * 60 * 0.621371
                                                 if stimp:
-                                                    speed *= stimp
+                                                    speed *= stimp   # Local Stimp Adjustment
                                                      
                                             # debug out
                                             print("Time Elapsed in Sec: "+str(timeElapsedSeconds))
@@ -1100,7 +1137,7 @@ while True:
     # show main putting window
 
     outputframe = resizeWithAspectRatio(frame, width=int(args["resize"]))
-    cv2.imshow("Putting View: Press q to exit / a=adv f=flip u=undistort v=video w=write_video", outputframe)
+    cv2.imshow("Putting View: Press q to exit / a=adv f=flip s=stimp u=undistort v=video w=write_video", outputframe)
     
     
     #cv2.moveWindow("Putting View: Press q to exit / a for adv. settings", 20,20)
@@ -1132,8 +1169,10 @@ while True:
             cv2.createTrackbar("MJPEG", "Advanced Settings", int(mjpegenabled), 1, setMjpeg)
             cv2.createTrackbar("FPS", "Advanced Settings", int(overwriteFPS), 240, setOverwriteFPS)
             cv2.createTrackbar("Darkness", "Advanced Settings", int(darkness), 255, setDarkness)
+            a_key_pressed = True
         else:
-            a_key_pressed = true
+            cv2.destroyWindow("Advanced Settings")
+            a_key_pressed = False
             
     if key == ord("d"):
         args["debug"] = 1
@@ -1149,8 +1188,8 @@ while True:
         contrast = vs.get(cv2.CAP_PROP_CONTRAST)
         hue = vs.get(cv2.CAP_PROP_HUE)
         saturation = vs.get(cv2.CAP_PROP_SATURATION)
-        exposure = vs.get(cv2.CAP_PROP_EXPOSURE)
-        auto_exposure = vs.get(cv2.CAP_PROP_AUTO_EXPOSURE)
+        exposure = vs.get(cv2.CAP_PROP_EXPOSURE)  # -7 means 2^-7 = 1/(2^7) = 1/128 sec.  A value of -1 = 2^(-1) = 1/(2^1) = 1/2 sec exposure time or 2FPS.    
+        auto_exposure = vs.get(cv2.CAP_PROP_AUTO_EXPOSURE) # CAP_PROP_AUTO_EXPOSURE is 0.25 this means manual, 0.75 sets it to automatic *workaround bug*
         gamma = vs.get(cv2.CAP_PROP_GAMMA)
         gain = vs.get(cv2.CAP_PROP_GAIN)
 
@@ -1179,12 +1218,16 @@ while True:
           flip_video = False;
     if key == ord("s"):
         if not s_key_pressed:
-            cv2.namedWindow("Local Stimp")
-            cv2.resizeWindow("Local Stimp",640, 100)
-            cv2.createTrackbar("Adjust 0.0 to 2.0", "Local Stimp", istimp, 200, setStimp)
+            cv2.namedWindow("Local_Stimp")
+            cv2.setWindowTitle("Local_Stimp","Local Stimp Adjustment = (0 to 200) / 100.0 : Default=100")
+            istimp = int(stimp * 100.0)
+            cv2.resizeWindow("Local_Stimp",640, 50)
+            cv2.createTrackbar("L_Stimp: ", "Local_Stimp", istimp, 200, setStimp)
             stimp=(float(istimp)/100.0)
+            s_key_pressed = True
         else:
-            s_key_pressed = true
+            cv2.destroyWindow("Local_Stimp")
+            s_key_pressed = False
     else:
         pass
           
