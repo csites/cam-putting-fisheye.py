@@ -91,8 +91,10 @@ else:
 # Local stimp correction factor.   [0.0 to 2.0] 1.0 = default. 
 if parser.has_option('putting', 'stimp'):
     stimp=float(parser.get('putting', 'stimp'))
+    istimp=int(stimp)
 else:
-    stimp=1.0
+    stimp=100.0
+    istimp=100
     
 # Read Fisheye len correction matrixes from config.ini  
 if parser.has_option('fisheye', 'k'):
@@ -548,7 +550,7 @@ def setDarkness(value):
 def setStimp(value):
     print(value)    
     global stimp
-    stimp = float(value)
+    stimp = float(value)/100.0
     parser.set('putting', 'stimp', str(stimp))
     parser.write(open(CFG_FILE, "w"))
     pass    
@@ -1177,9 +1179,10 @@ while True:
           flip_video = False;
     if key == ord("s"):
         if not s_key_pressed:
-            cv2.namedWindow("Local Stimp adjustment Settings")
-            cv2.resizeWindow("Local Stimp Settings [0.0 to 2.0]", 320, 200)
-            cv2.createTrackbar("Local Stimp rating", "Local Stimp", stimp, 2.0, setStimp)
+            cv2.namedWindow("Local Stimp")
+            cv2.resizeWindow("Local Stimp",640, 100)
+            cv2.createTrackbar("Adjust 0.0 to 2.0", "Local Stimp", istimp, 200, setStimp)
+            stimp=(float(istimp)/100.0)
         else:
             s_key_pressed = true
     else:
