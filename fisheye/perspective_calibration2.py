@@ -1,57 +1,51 @@
+import numpy as np
+import cv2
+
 import cv2
 import numpy as np
 
-# Define the checkerboard dimensions and square size
-checkerboard_size = (7, 7)
-square_size = 2 # in inches
+# Load the input image
+img = cv2.imread('Calibrations/image_2.jpg')
 
-# Prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(8,5,0)
-object_points = np.zeros((np.prod(checkerboard_size), 3), dtype=np.float32)
-object_points[:, :2] = np.mgrid[0:checkerboard_size[0], 0:checkerboard_size[1]].T.reshape(-1, 2)
-object_points *= square_size
 
-# Create arrays to store object points and image points from all images
-object_points_list = [] # 3D points in real world space
-image_points_list = [] # 2D points in image plane.
+# Define the dimensions of the chessboard
+chessboard_size = (7, 7)  # 7 corners per edge
 
-# Load the image
-image = cv2.imread('Calibrations/image_2.jpg')
+# Detect the corners of the chessboard in the image
+ret, corners = cv2.findChessboardCorners(img, chessboard_size, None)
+# Draw the detected corners on the image
+cv2.drawChessboardCorners(img, chessboard_size, corners, ret)
+cv2.imshow('Input',img)
 
-# Find the corners of the checkerboard in the image
-gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-ret, corners = cv2.findChessboardCorners(gray, checkerboard_size, None)
-
-# If the corners are found, add object points and image points to the list
 if ret:
-    object_points_list.append(object_points)
-    image_points_list.append(corners)
 
-# Calibrate the camera using the image points and object points
-ret, camera_matrix, distortion_coeffs, rvecs, tvecs = cv2.calibrateCamera(object_points_list, image_points_list, gray.shape[::-1], None, None)
-print("camera_matrix="+str(camera_matrix))
-print("distortion_coeffs="+str(distortion_coeffs))
-# Transform the image points into real-world coordinates
-undistorted_image = cv2.undistort(image, camera_matrix, distortion_coeffs)
-new_camera_matrix, roi = cv2.getOptimalNewCameraMatrix(camera_matrix, distortion_coeffs, gray.shape[::-1], 1, gray.shape[::-1])
-new_image_points = cv2.undistortPoints(corners, camera_matrix, distortion_coeffs, P=new_camera_matrix)
+    # Define the coordinates of the four corners of the chessboard in the input image
+    
+    # Define the coordinates of the four corners of the output image
+    h, w = img.shape[:2]   # Output image size in inches
+    corners = corners.astype(int)
+    minh = corners[:,:,0].min()
+    maxh = corners[:,:,0].max()
+    minw = corners[:,:,1].min()
+    maxw = corners[:,:,1].max()
 
-# Select two points in the image and measure their distance in real-world units
-point1 = new_image_points[0, 0]
-point2 = new_image_points[2, 0]
-print("point1: "+str(point1))
-print("point2: "+str(point2))
-pp1=tuple(point1.astype(int))
-pp2=tuple(point2.astype(int))
-print("pp1="+str(pp1))
-print("pp2="+str(pp2))
-distance_pixels = np.linalg.norm(point2 - point1)
-distance_inches = distance_pixels * square_size / np.linalg.norm(object_points[2] - object_points[0])
+    # This maps the perspective for the checkerboard to the full screen of the image. That may mess with scale.    
+    # And damn, it's hard to get these dumb arrays in the correct format. 
+    fc=np.array([ [tuple(corners[0,0])],[tuple(corners[6,0])], [tuple(corners[42,0])], [tuple(corners[48,0])] ],np.float32)
+    # This should create a perspective matrix that fits everything
+    dc=np.array([ [minw, minh], [maxw, minh], [minw, maxh], [maxw, maxh] ], np.float32)            
+    # Compute the transformation matrix
+    H = cv2.getPerspectiveTransform(fc, dc)
+    print(H)
+    
+    # Apply the transformation matrix to the input image
+    output_img = cv2.warpPerspective(img, H, (w, h))
+    cv2.imshow('Output',output_img)
+    cv2.waitKey(0)
+    # Save the output image
+#    cv2.imwrite('output.jpg', db/output_img.jpg)
+else:
+    print("Unable to detect chessboard corners in image.")
 
-print("Distance in pixels:", distance_pixels)
-print("Distance in inches:", distance_inches)
-
-# Display the original and undistorted images with the measured distance
-undistored_image=cv2.line(undistorted_image, pp1, pp2, (0, 244, 255),1)
-cv2.putText(undistorted_image, f"{distance_inches:.2f} inches", tuple(((point1 + point2) / 2).astype(int)), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-cv2.imshow("Undistorted", undistorted_image)
-cv2.waitKey(0)
+# NOTE:   After reviewing this, One can see the correction applied to the chessboard has distortions of scale.  For putting, 
+# Instead of the chess board, we may want to simply mark the 4 corners of the putting area 

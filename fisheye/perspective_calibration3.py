@@ -1,52 +1,78 @@
+import numpy as np
+import cv2
+
 import cv2
 import numpy as np
 
-# Load the image
-img = cv2.imread('Calibrations/image_2.jpg')
+# Load the input image
+image = cv2.imread('Calibrations/image_2.jpg')
 
-# Define the checkerboard dimensions
-checkerboard_size = (7, 7)
 
-# Find the corners of the checkerboard in the image
-gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-ret, corners = cv2.findChessboardCorners(gray, checkerboard_size, None)
-print("corners="+str(corners))
+# Create a window to display the image.
+cv2.namedWindow('Image')
 
-# Draw the corners on the image for visualization
-cv2.drawChessboardCorners(img, checkerboard_size, corners, ret)
-cv2.imshow("Original", img)
+# Bind a mouse callback function to the window.
+def on_mouse_move(event, x, y, flags, param):
+    if event == cv2.EVENT_MOUSEMOVE:
+        row = y // image.shape[0]
+        column = x // image.shape[1]
+        # Draw a crosshair at the row and column indices.
+        cv2.line(image, (row, column), (row, column), (0, 0, 255), 2)
+        cv2.line(image, (row, column), (row + 1, column), (0, 0, 255), 2)
+        cv2.line(image, (row, column), (row, column + 1), (0, 0, 255), 2)
+        cv2.line(image, (row + 1, column), (row + 1, column + 1), (0, 0, 255), 2)
+        cv2.imshow('Image', image)
+        
+# Set the mouse callback function.
+cv2.setMouseCallback('Image', on_mouse_move)
 
-# Compute the homography matrix
-if ret: 
-    print("Corners_shape: "+str(corners.shape))
-    print("Corners: "+str(corners))
-    ncorners=np.array([corners[0,0,:],corners[6,0,:], corners[48-6:,0,:], corners[49-1,0,:]], dtype=np.float32)
-    print("ncorners: "+str(ncorners))
-    dcorners=np.array( [[ corner[48-6,0,0], corner[0,0,1] ] , [ corner[48,0,1],corner[0,0,1] ] , corners[48-6,0,:], corners[49-1,0,:]], dtype=np.float32)
-    print("dcorners: "+str(dcorners))  
-    h, _ = cv2.findHomography(corners, dst_corners)
-    print("Homography: "+str(h))
-    
-    # Apply the homography matrix to the image to correct the perspective
-    corrected_img = cv2.warpPerspective(img, h, (img.shape[1], img.shape[0]))
+# Display the image.
+while True:
+    cv2.imshow('Image', image)
+    k = cv2.waitKey(20) & 0xFF
+    if k == 27:
+        break
 
-    # Display the original and corrected images
-    cv2.imshow("Original", img)
-    cv2.imshow("Corrected", corrected_img)
-    cv2.waitKey(0)
-import cv2
-import numpy as np
+# Close all windows.
+cv2.destroyAllWindows()
 
-# Compute the homography matrix
+# Define the dimensions of the chessboard
+chessboard_size = (7, 7)  # 7 corners per edge
+
+# Detect the corners of the chessboard in the image
+ret, corners = cv2.findChessboardCorners(img, chessboard_size, None)
+# Draw the detected corners on the image
+cv2.drawChessboardCorners(img, chessboard_size, corners, ret)
+cv2.imshow('Input',img)
+cv2.waitKey(0)
+
 if ret:
-    corners = np.float32(corners)
-    dst_corners = np.array([[0, 0], [8, 0], [8, 5], [0, 5]], dtype=np.float32) * 2 # In inches
-    h, _ = cv2.findHomography(corners, dst_corners)
 
-    # Apply the homography matrix to the image to correct the perspective
-    corrected_img = cv2.warpPerspective(img, h, (img.shape[1], img.shape[0]))
+    # Define the coordinates of the four corners of the chessboard in the input image
+    
+    # Define the coordinates of the four corners of the output image
+    h, w = img.shape[:2]   # Output image size in inches
+    corners = corners.astype(int)
+    minh = corners[:,:,0].min()
+    maxh = corners[:,:,0].max()
+    minw = corners[:,:,1].min()
+    maxw = corners[:,:,1].max()
 
-    # Display the original and corrected images
-    cv2.imshow("Original", img)
-    cv2.imshow("Corrected", corrected_img)
+    # This maps the perspective for the checkerboard to the full screen of the image. That may mess with scale.    
+    # And damn, it's hard to get these dumb arrays in the correct format. 
+    fc=np.array([ [tuple(corners[0,0])],[tuple(corners[6,0])], [tuple(corners[42,0])], [tuple(corners[48,0])] ],np.float32)
+    dc=np.array([ [0,0], [w,0], [0,h], [w,h]],np.float32)
+
+    # Compute the transformation matrix
+    # H = cv2.getPerspectiveTransform(fc, dc)
+    H, _ret = cv2.findHomography(fc, dc)
+    print(H)
+    
+    # Apply the transformation matrix to the input image
+    output_img = cv2.warpPerspective(img, H, (w, h))
+    cv2.imshow('Output',output_img)
     cv2.waitKey(0)
+    # Save the output image
+#    cv2.imwrite('output.jpg', db/output_img.jpg)
+else:
+    print("Unable to detect chessboard corners in image.")
