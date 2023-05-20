@@ -1,34 +1,31 @@
 import numpy as np
 import cv2
 
-import cv2
-import numpy as np
-
 # Load the input image
-image = cv2.imread('Calibrations/image_2.jpg')
-
+img = cv2.imread('Calibrations/image_2.jpg')
 
 # Create a window to display the image.
 cv2.namedWindow('Image')
 
 # Bind a mouse callback function to the window.
 def on_mouse_move(event, x, y, flags, param):
+    global img
     if event == cv2.EVENT_MOUSEMOVE:
-        row = y // image.shape[0]
-        column = x // image.shape[1]
+        row = y // img.shape[0]
+        column = x // img.shape[1]
         # Draw a crosshair at the row and column indices.
-        cv2.line(image, (row, column), (row, column), (0, 0, 255), 2)
-        cv2.line(image, (row, column), (row + 1, column), (0, 0, 255), 2)
-        cv2.line(image, (row, column), (row, column + 1), (0, 0, 255), 2)
-        cv2.line(image, (row + 1, column), (row + 1, column + 1), (0, 0, 255), 2)
-        cv2.imshow('Image', image)
+        cv2.line(img, (row, column), (row, column), (0, 0, 255), 2)
+        cv2.line(img, (row, column), (row + 1, column), (0, 0, 255), 2)
+        cv2.line(img, (row, column), (row, column + 1), (0, 0, 255), 2)
+        cv2.line(img, (row + 1, column), (row + 1, column + 1), (0, 0, 255), 2)
+        
         
 # Set the mouse callback function.
 cv2.setMouseCallback('Image', on_mouse_move)
 
 # Display the image.
 while True:
-    cv2.imshow('Image', image)
+    cv2.imshow('Image', img)
     k = cv2.waitKey(20) & 0xFF
     if k == 27:
         break
