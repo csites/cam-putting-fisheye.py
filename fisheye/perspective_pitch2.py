@@ -37,8 +37,8 @@ if parser.has_option('fisheye', 'scaled_k'):
     scaled_K=str2array(parser.get('fisheye', 'scaled_k'))
 
 # Read Perspective Correction angle from config.ini  
-if parser.has_option('perspective', 'P_Angle'):
-    pitch_angle=str2array(parser.get('perspective', 'P_Angle')) 
+if parser.has_option('perspective', 'Camera_pitch'):
+    pitch_angle=str2array(parser.get('perspective', 'Camera_pitch')) 
     P_test=1
 else: 
     P_test=0
@@ -140,7 +140,21 @@ def main():
         img = cv2.line(img, (w2, h1-round(h1/10)), (w2, h1 + round(h1/10)), (0,0,255), 1)
 
         cv2.imshow('Output', img)
-        
+        # Create an entry in ../config.ini 
+
+        if key == ord('w'):
+            W_test = 0
+            print("Write the pitch_angle to config.ini")
+            # Note. This assume the application is one directory below where the config.ini is located.   
+            config = configparser.ConfigParser()
+            osFilename='config.ini'
+            config.read(osFilename)
+            if not config.has_section('perspective'):
+                config.add_section('perspective')
+            config.set('perspective', 'Camera_pitch', str(pitch_angle))
+            with open(osFilename, 'w') as config_file:
+                config.write(config_file)
+
 
     cv2.destroyAllWindows()
 

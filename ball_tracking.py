@@ -114,7 +114,7 @@ if parser.has_option('camera_properties','exposure'):
     cam_exposure=float(parser.get('camera_properties','exposure'))
 else:
     cam_exposure=0.0
- # CAP_PROP_AUTO_EXPOSURE is 0.25 this means manual, 0.75 sets it to automatic (default). *workaround bug*    
+# CAP_PROP_AUTO_EXPOSURE is 0.25 this means manual, 0.75 sets it to automatic (default). *workaround bug*    
 if parser.has_option('camera_properties','auto_exposure'):
     cam_autoexposure=float(parser.get('camera_properties','auto_exposure'))
 else:
@@ -147,6 +147,12 @@ if parser.has_option('camera_properties','webcamindex'):
     cam_webcamindex=int(parser.get('camera_properties','webcamindex'))
 else:
     cam_webcamindex=0
+# Read Perspective Correction angle from config.ini  
+if parser.has_option('perspective', 'Camera_pitch'):
+    pitch_angle=str2array(parser.get('perspective', 'Camera_pitch')) 
+    P_test=1
+else: 
+    P_test=0
     
 
 # Detection Gateway
@@ -444,12 +450,22 @@ if type(video_fps) == float:
         new_fps.append(video_fps)
     video_fps = new_fps
 
+# Setup the perspective matrix P_matrix if we are doing perspective correction.
+if P_test == 1:
+    center_line = int(height / 2)
+    # Calculate the pitch in radians
+    pitch_rad = np.radians(camera_pitch)
+    # Define the source and destination points for perspective transformation
+    src_points = np.float32([[0, center_line], [width, center_line], [0, height], [width, height]])
+    dst_points = np.float32([[0, center_line], [width, center_line], [width / 2 - np.tan(pitch_rad) * center_line, height],
+                            [width / 2 + np.tan(pitch_rad) * center_line, height]])
+    # Compute the perspective transformation matrix
+    pmatrix = cv2.getPerspectiveTransform(src_points, dst_points)
 
 # we are using x264 codec for mp4
 fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 #out1 = cv2.VideoWriter('Ball-New.mp4', apiPreference=0, fourcc=fourcc,fps=video_fps[0], frameSize=(int(width), int(height)))
 out2 = cv2.VideoWriter('Calibration.mp4', apiPreference=0, fourcc=fourcc,fps=120, frameSize=(int(width), int(height)))
-
 
 
 def decode(frame):
@@ -462,6 +478,20 @@ def decode(frame):
     
     return (left, right)
 
+# Fix this for efficency please.
+def correct_perspective_image(image):
+    global pmatrix, width, height
+    # Apply the perspective correction
+    corrected_image = cv2.warpPerspective(image, pmatrix, (width, height))
+    return corrected_image
+
+def correct_perspective_point(p):
+    global pmatrix
+    px = (pmatrix[0][0]*p[0] + pmatrix[0][1]*p[1] + pmatrix[0][2]) / ((pmatrix[2][0]*p[0] + pmatrix[2][1]*p[1] + pmatrix[2][2]))
+    py = (pmatrix[1][0]*p[0] + pmatrix[1][1]*p[1] + pmatrix[1][2]) / ((pmatrix[2][0]*p[0] + pmatrix[2][1]*p[1] + pmatrix[2][2]))
+    p_after = (int(px), int(py))
+    return p_after
+    
 def setFPS(value):
     print(value)
     vs.set(cv2.CAP_PROP_FPS,value)
@@ -656,6 +686,8 @@ while True:
             new_K = cv2.fisheye.estimateNewCameraMatrixForUndistortRectify(scaled_K, D, dim2, np.eye  (3), balance=balance)
             map1, map2 = cv2.fisheye.initUndistortRectifyMap(scaled_K, D, np.eye(3), new_K, dim3, cv2.CV_16SC2)
             frame = cv2.remap(frame, map1, map2, interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
+        if undistort_video == True and P_test == 1:
+            frame = correct_perspective_image(frame)
 # FISHEYE View 
         if flip_video == True:
             frame = cv2.flip(frame, 1)  
@@ -945,7 +977,13 @@ while True:
                                               endPos = end_undistortedPoints
                                         else:
                                               pass
-                                                  
+                                        if P_test == 1:
+                                            s = correct_perspective_point(startPos)
+                                            e = correct_perspective_point(endPos)
+                                            print("Old Start Position: "+str(startPos)+" Old End Position: "+str(endPos)) 
+                                            print("New Start Position: "+str(s)+" New End Position: "+str(e))   
+                                            startPos = s
+                                            endPos = e   
 # ENDFISHEYE
                                         # calculate the distance traveled by the ball in pixel
                                         a = endPos[0] - startPos[0]

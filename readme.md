@@ -25,10 +25,17 @@ To run the new ball_tracking you would run it like; 'cd dist\ball_tracking' the 
 This version introduces a Perspective_pitch correction (perspective_pitch2.py) which will perform a perspective pitch of the image around the center horizontal line (which should be your putting line).
 The angle represents the camera angle looking down on your putt line, and will apply a perspective warp to the image based on that angle.  This should help anyone who has there camera mounted at an angle looking down to your putting surface.   This correction gets applied after the fisheye, and since the fisheye correction is optional it should work properly for standard webcams. This will adjust refine any off line putts mainly on the HLA, but also speed of offline putts.  With this adjustment, it should be possible to putt off of center to correct for some green slopes in game.  So it should add a new dimension to Sim putting.
 <p align="center">
-<img src="fisheye/db/Perspective_pitch_before.jpg" width="320" height="240" title="Original Image">&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
 <img src="fisheye/db/Perspective_pitch_after.jpg" width="320" height="240" title="Perspective Corrected Image">
 </p>
-
+<p> 
+When the putting line is aligned with center row of the image we can calculate an image from the view of a camera pitched around that line. Kowning that angle, we can apply some simple trigonmetry to find the view apply a perspective transform.   This can allow us to reverse the perspective distotion by simply knowing the camera pitch angle. This all depends on your putting line matching the line the image will be pitched around.  To help establish the angle of your camera looking down at the putting line, use the program called Perspective_pitch.py.   Basicall the slider goes from 0 to 90 degrees (starting at 0), causing the live image to pirtch around the putting line.  To make this easier, you may want to put a pair of rulers in the screen or other objects so you can tell when the image is alligned flat. In my case, I have to aiming sticks a couple of golf balls and some checkerboards patterns rotated around the pitch axis and transformed to an appearance as if the camera was overhead looking directly down.  
+</p?
+<p align="center">
+ <img src="fisheye/db/Perspective_pitch.jpg" width="320" height="240" title="Perspective pitch after fisheye correction">
+</p>
+<p>This angle is written out to the config.ini file under the lable 'perspective'. It's then read back in the ball-tracking.py program and used to apply corrections to the HLA and ballspeed measurements.
+</p>
 <p>
 Greens are measure using a Stimpmeter, which is a 36in alumimum v-shape rail held at a 22 degree angle, and you roll a golfball down the rail from the 30in mark.   At the bottom of the rail, the ballspeed is assumed to be exactly 95.5 inch/sec or 5.426136 MPH.  It will travel across the green an decellerate to 0m.  A travel distance of 10ft = Stimp 10,  11ft = Stimp 11, and so on.  Stimp 7 is considered slow, 13-14 is fast.  So for a stimp rating of 12, what would the initial ballspeed be for a putt that travels 20ft and comes to a stop. It would be 1.118182 MPH. So you get an idea of just how slow the ball has to launch for a 20ft putt.  For my system, the anything slower than 4mph is nearly impossible to create, so I've added a new 's' key option that will bring up a slide bar to allow you to select stimp.  Basically is slows down the the putt speed by a certain percentage.  My typical 20ft putt on a stimp 12 would feel like a tap and move a foot. But on screen it would move 20ft.  So simply devide the ball speed by a factor and it may help with the feel of the putt and provide more realism.  "http://www.waddengolfacademy.com/putting/USGA%20Green%20Speed%20Physics.pdf"
 </p> 
