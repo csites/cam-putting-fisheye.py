@@ -1226,8 +1226,9 @@ while True:
         contrast = vs.get(cv2.CAP_PROP_CONTRAST)
         hue = vs.get(cv2.CAP_PROP_HUE)
         saturation = vs.get(cv2.CAP_PROP_SATURATION)
-        exposure = vs.get(cv2.CAP_PROP_EXPOSURE)  # -7 means 2^-7 = 1/(2^7) = 1/128 sec.  A value of -1 = 2^(-1) = 1/(2^1) = 1/2 sec exposure time or 2FPS.    
-        auto_exposure = vs.get(cv2.CAP_PROP_AUTO_EXPOSURE) # CAP_PROP_AUTO_EXPOSURE is 0.25 this means manual, 0.75 sets it to automatic *workaround bug*
+        exposure = vs.get(cv2.CAP_PROP_EXPOSURE)  # -7 means 2^-7 = 1/(2^7) = 1/128 sec.  A value of -1 = 2^(-1) = 1/(2^1) = 1/2 sec exposure time or 2FPS. 
+        # Auto_exposure has a bug in that get and set require different value.  The get returns a -1,0 = automatic, 0.0 = manual.  
+        auto_exposure = vs.get(cv2.CAP_PROP_AUTO_EXPOSURE) # CAP_PROP_AUTO_EXPOSURE set is 0.25 this means manual, 0.75 sets it to automatic. *workaround bug*
         gamma = vs.get(cv2.CAP_PROP_GAMMA)
         gain = vs.get(cv2.CAP_PROP_GAIN)
 
