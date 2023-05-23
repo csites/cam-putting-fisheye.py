@@ -149,7 +149,7 @@ else:
     cam_webcamindex=0
 # Read Perspective Correction angle from config.ini  
 if parser.has_option('perspective', 'Camera_pitch'):
-    pitch_angle=str2array(parser.get('perspective', 'Camera_pitch')) 
+    camera_pitch=str2array(parser.get('perspective', 'Camera_pitch')) 
     P_test=1
 else: 
     P_test=0
@@ -479,7 +479,7 @@ def decode(frame):
     return (left, right)
 
 # Fix this for efficency please.
-def correct_perspective_image(image):
+def correct_perspective_image(image,pmatrix):
     global pmatrix, width, height
     # Apply the perspective correction
     corrected_image = cv2.warpPerspective(image, pmatrix, (width, height))
@@ -687,7 +687,7 @@ while True:
             map1, map2 = cv2.fisheye.initUndistortRectifyMap(scaled_K, D, np.eye(3), new_K, dim3, cv2.CV_16SC2)
             frame = cv2.remap(frame, map1, map2, interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
         if undistort_video == True and P_test == 1:
-            frame = correct_perspective_image(frame)
+            frame = correct_perspective_image(frame,pmatrix)
 # FISHEYE View 
         if flip_video == True:
             frame = cv2.flip(frame, 1)  
