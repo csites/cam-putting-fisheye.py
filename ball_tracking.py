@@ -149,7 +149,7 @@ else:
     cam_webcamindex=0
 # Read Perspective Correction angle from config.ini  
 if parser.has_option('perspective', 'Camera_pitch'):
-    pitch_angle=int(parser.get('perspective', 'Camera_pitch')) 
+    camera_pitch=int(parser.get('perspective', 'Camera_pitch')) 
     P_test=1
 else: 
     P_test=0
