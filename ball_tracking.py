@@ -149,10 +149,14 @@ else:
     cam_webcamindex=0
 # Read Perspective Correction angle from config.ini  
 if parser.has_option('perspective', 'Camera_pitch'):
-    camera_pitch=str2array(parser.get('perspective', 'Camera_pitch')) 
+    pitch_angle=int(parser.get('perspective', 'Camera_pitch')) 
     P_test=1
 else: 
     P_test=0
+if parser.has_option('perspective', 'Putt_line'):
+    putt_line=int(parser.get('perspective', 'Putt_line'))
+else: 
+    putt_line = -1
     
 
 # Detection Gateway
@@ -452,13 +456,14 @@ if type(video_fps) == float:
 
 # Setup the perspective matrix P_matrix if we are doing perspective correction.
 if P_test == 1:
-    center_line = int(height / 2)
+    if putt_line == -1:
+        putt_line = int(height / 2)
     # Calculate the pitch in radians
     pitch_rad = np.radians(camera_pitch)
     # Define the source and destination points for perspective transformation
-    src_points = np.float32([[0, center_line], [width, center_line], [0, height], [width, height]])
-    dst_points = np.float32([[0, center_line], [width, center_line], [width / 2 - np.tan(pitch_rad) * center_line, height],
-                            [width / 2 + np.tan(pitch_rad) * center_line, height]])
+    src_points = np.float32([[0, putt_line], [width, putt_line], [0, height], [width, height]])
+    dst_points = np.float32([[0, putt_line], [width, putt_line], [width / 2 - np.tan(pitch_rad) * putt_line, height],
+                            [width / 2 + np.tan(pitch_rad) * putt_line, height]])
     # Compute the perspective transformation matrix
     pmatrix = cv2.getPerspectiveTransform(src_points, dst_points)
 
@@ -479,7 +484,7 @@ def decode(frame):
     return (left, right)
 
 # Fix this for efficency please.
-def correct_perspective_image(image,pmatrix):
+def correct_perspective_image(image):
     global pmatrix, width, height
     # Apply the perspective correction
     corrected_image = cv2.warpPerspective(image, pmatrix, (width, height))
@@ -687,7 +692,7 @@ while True:
             map1, map2 = cv2.fisheye.initUndistortRectifyMap(scaled_K, D, np.eye(3), new_K, dim3, cv2.CV_16SC2)
             frame = cv2.remap(frame, map1, map2, interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
         if undistort_video == True and P_test == 1:
-            frame = correct_perspective_image(frame,pmatrix)
+            frame = correct_perspective_image(frame)
 # FISHEYE View 
         if flip_video == True:
             frame = cv2.flip(frame, 1)  
