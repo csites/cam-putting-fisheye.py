@@ -487,7 +487,7 @@ def decode(frame):
 def correct_perspective_image(image):
     global pmatrix, width, height
     # Apply the perspective correction
-    corrected_image = cv2.warpPerspective(image, pmatrix, (width, height))
+    corrected_image = cv2.warpPerspective(image, pmatrix, (int(width), int(height)))
     return corrected_image
 
 def correct_perspective_point(p):
