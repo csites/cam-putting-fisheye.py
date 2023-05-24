@@ -21,7 +21,7 @@ def str2array(s):
     return np.array(ast.literal_eval(s))
 
 parser = ConfigParser()
-osCFG_FILE='../config.ini'
+osCFG_FILE='config.ini'
 parser.read(osCFG_FILE)
 
 # Read Fisheye len correction matrixes from config.ini  
@@ -30,7 +30,6 @@ if parser.has_option('fisheye', 'k'):
     K_test=1
 else: 
     K_test=0
-
 if parser.has_option('fisheye', 'd'):
     D=str2array(parser.get('fisheye', 'd'))
 if parser.has_option('fisheye', 'scaled_k'):
@@ -38,26 +37,33 @@ if parser.has_option('fisheye', 'scaled_k'):
 
 # Read Perspective Correction angle from config.ini  
 if parser.has_option('perspective', 'Camera_pitch'):
-    pitch_angle=str2array(parser.get('perspective', 'Camera_pitch')) 
+    pitch_angle=int(parser.get('perspective', 'Camera_pitch')) 
     P_test=1
 else: 
     P_test=0
+if parser.has_option('perspective', 'Putt_line'):
+    putt_line=int(parser.get('perspective', 'Putt_line'))
+else: 
+    putt_line = -1
+    
 K_apply=0
 flipImage=0
 balance=1
 
-def correct_perspective(image, pitch):
+def correct_perspective(image, pitch, putt_line):
     global perspective_matrix
     height, width = image.shape[:2]
-    center_line = int(height / 2)
 
+    if putt_line == -1:
+      putt_line = int(height / 2)
+   
     # Calculate the pitch in radians
     pitch_rad = np.radians(pitch)
 
     # Define the source and destination points for perspective transformation
-    src_points = np.float32([[0, center_line], [width, center_line], [0, height], [width, height]])
-    dst_points = np.float32([[0, center_line], [width, center_line], [width / 2 - np.tan(pitch_rad) * center_line, height],
-                            [width / 2 + np.tan(pitch_rad) * center_line, height]])
+    src_points = np.float32([[0, putt_line], [width, putt_line], [0, height], [width, height]])
+    dst_points = np.float32([[0, putt_line], [width, putt_line], [width / 2 - np.tan(pitch_rad) * putt_line, height],
+                            [width / 2 + np.tan(pitch_rad) * putt_line, height]])
 
     # Compute the perspective transformation matrix
     perspective_matrix = cv2.getPerspectiveTransform(src_points, dst_points)
@@ -69,7 +75,7 @@ def correct_perspective(image, pitch):
 
 def main():
     global K_test, K_apply, P_test, K, D, Scaled_K, pitch_angle, flipImage
-    global balance
+    global balance, putt_line
     
     camera_num = input("Enter camera number (0 to 4): ")
     try:
@@ -88,12 +94,19 @@ def main():
     wl=round(width/20)
     wr=width-wl
     w2=round(width/2)
-  
-    cv2.namedWindow('Output', cv2.WINDOW_NORMAL)
+    
+    cv2.namedWindow('Output', cv2.WINDOW_AUTOSIZE | cv2.WINDOW_KEEPRATIO)
+    cv2.setWindowTitle('Output', 'Perspective_pitch q=quit, f=flip, p=toggle pitch, u=toggle fisheye, w=write config.ini') 
     if not P_test:
         pitch_angle = 0
-    cv2.createTrackbar('Pitch', 'Output', pitch_angle, 90, lambda x: None)
+    if putt_line == -1:
+      putt_line = h1  
 
+    ret, img = cap.read()
+    cv2.createTrackbar('Pitch', 'Output', pitch_angle, 90, lambda x: None)
+    cv2.createTrackbar('Putt_line', 'Output', putt_line, height-1, lambda x: None)
+    cv2.imshow('Output', img)
+      
     while True:
         key = cv2.waitKey(1)
         if key == ord('q'):
@@ -113,10 +126,7 @@ def main():
              P_test = 1
            else:
              P_test = 0
-        if key == ord('w'):
-            W_test = 0
-            print("Write the pitch_angle to config.ini")
-                          
+ 
         ret, img = cap.read()  # read a frame from the camera
         if not ret:
             break
@@ -127,14 +137,16 @@ def main():
               new_K = cv2.fisheye.estimateNewCameraMatrixForUndistortRectify(scaled_K, D, dim2, np.eye  (3), balance=balance)
               map1, map2 = cv2.fisheye.initUndistortRectifyMap(scaled_K, D, np.eye(3), new_K, dim3, cv2.CV_16SC2)
               img = cv2.remap(img, map1, map2, interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
-    
+
+        putt_line = cv2.getTrackbarPos('Putt_line', 'Output')
         if flipImage == 1:
             img = cv2.flip(img, flipImage)
         if P_test == 1:
             pitch_angle = cv2.getTrackbarPos('Pitch', 'Output')
-            img = correct_perspective(img, pitch_angle)
+            img = correct_perspective(img, pitch_angle, putt_line)
 
         img = cv2.line(img, (0,h1), (width,h1), (0,0,255), 1)
+        img = cv2.line(img, (0,putt_line), (width,putt_line), (0,255,255), 1)
         img = cv2.line(img, (wl,0), (wl,height), (0,0,255), 1)
         img = cv2.line(img, (wr,0), (wr,height), (0,0,255), 1)
         img = cv2.line(img, (w2, h1-round(h1/10)), (w2, h1 + round(h1/10)), (0,0,255), 1)
@@ -144,14 +156,15 @@ def main():
 
         if key == ord('w'):
             W_test = 0
-            print("Write the pitch_angle to config.ini")
+            print("Write the pitch_angle and putt_line to config.ini")
             # Note. This assume the application is one directory below where the config.ini is located.   
-            config = configparser.ConfigParser()
+            config = ConfigParser()
             osFilename='config.ini'
             config.read(osFilename)
             if not config.has_section('perspective'):
                 config.add_section('perspective')
             config.set('perspective', 'Camera_pitch', str(pitch_angle))
+            config.set('perspective', 'Putt_line', str(putt_line))
             with open(osFilename, 'w') as config_file:
                 config.write(config_file)
 
