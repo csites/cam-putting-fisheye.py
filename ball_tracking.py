@@ -1260,6 +1260,46 @@ while True:
           flip_video = True;
         else:
           flip_video = False;
+    # We really need a way to change webcams so we can quickly swithch them if we select the wrong cam.
+    # The question is do we need to change the window size as well, or can we simply switch cameras.
+    # For now, lets leave the window alone and let the opencv handle it. Max 4 webcams / USB controller.
+    # DSHOW assumes a windows machine BTW.  Also note: the distortion paramters will not change.
+    if key == ord("c"):
+        cam_webcamindex = cam_webcamindex + 1
+        if cam_webcamindex > 3:
+          cam_webcamindex = 0
+        print("New Webcam: "+str(cam_webcamindex))
+        vs.release()
+        stop_loop = 0 
+        while True: 
+          webcamindex = cam_webcamindex           
+          vs = cv2.VideoCapture(webcamindex + cv2.CAP_DSHOW)
+          if stop_loop == 0 and vs is None or not vs.isOpened():
+              print("Webcam "+str(webcamindex)+" does not exist or can't be opened.")
+              cam_webcamindex = cam_webcamindex + 1
+              if cam_webcamindex > 3:
+                cam_webcamindex = 0
+                stop_loop = 1
+              continue
+          else:
+            break
+            
+        if stop_loop == 1:
+          pass 
+        else:   
+          video_fps = vs.get(cv2.CAP_PROP_FPS)
+          height = vs.get(cv2.CAP_PROP_FRAME_HEIGHT)
+          width = vs.get(cv2.CAP_PROP_FRAME_WIDTH)
+          brightness = vs.get(cv2.CAP_PROP_BRIGHTNESS)
+          contrast = vs.get(cv2.CAP_PROP_CONTRAST)
+          hue = vs.get(cv2.CAP_PROP_HUE)
+          saturation = vs.get(cv2.CAP_PROP_SATURATION)
+          exposure = vs.get(cv2.CAP_PROP_EXPOSURE)  # -7 means 2^-7 = 1/(2^7) = 1/128 sec.  A value of -1 = 2^(-1) = 1/(2^1) = 1/2 sec exposure time or 2FPS. 
+          # Auto_exposure has a bug in that get and set require different value.  The get returns a -1,0 = automatic, 0.0 = manual.  
+          auto_exposure = vs.get(cv2.CAP_PROP_AUTO_EXPOSURE) # CAP_PROP_AUTO_EXPOSURE set is 0.25 this means manual, 0.75 sets it to automatic. *workaround bug*
+          gamma = vs.get(cv2.CAP_PROP_GAMMA)
+          gain = vs.get(cv2.CAP_PROP_GAIN)
+
     if key == ord("s"):
         if not s_key_pressed:
             cv2.namedWindow("Local_Stimp")
