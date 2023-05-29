@@ -1,36 +1,41 @@
 # Webcam based putting simulation with fisheye correction for GSPRO utilizing the R10 connector:
 
 ## ALL About Fisheye Lens Correction.
-
+Command:
+<p>
+So with the the new options, command keys are: 'u' toogle = undistort view.  'v' = Video adjustment panel, 'w' write video parameters to config.ini 's' toogle = Stimp adjustment window, 'f' toogle = flip image horizontall, 'a' toogle = Alleexx's advanced adjustments, 'd' = Color Debug and ball detection adjustments, 'q' to quit.
+</p> 
+<p>
 This is a variation of the Alleexx putting simulation (ball_tracking.py) provides a correction for fisheye lens. You can use it just like Alleexx's original putting, simulation without change by simply removing the '[fisheye]' section (and '[camera parameters]' section) in config.ini file.  If you desire to test or see what the fisheye correction does, itis already setup and calibrated to a 3.6mm fisheye lens for an ELP IR USB webcam.  If you want to see it in action using a standard camera, it will provide a distorted view, which is the lens correction being applied to your non-distorting lens.  I've provided a number of addional support utilities in a subdirectory called fisheye. The first program you will want to use is one to help allign the camera. For a fisheye lens, it performs best with the putting line directly on the middle row of the image. So for example if you have a 640wx480h image, you will want to allign you putting path to be on 240h line. The program for this is 'fisheye/simple_cam_allign.py'.  If the bending of your fisheye camera isn't extreme, Alleexx's orginal code should give a good estimate of ball speed and horizontal launch angle (HLA) with just that simple allignment.  If you have a fisheye lens, this will provide an accurate and precise value for HLA and ball speed.  
-
+</p><p>
 If you have a fisheye camera and want to build your own lens model, the processes is a little more involved.  The first step is to calibrate the camera and this is done by taking a series of snapshot images of a chessboard in different places in camera's fiield of view.  So first we need to align the camera. I've provided a program to help with this. The program 'fisheye\Snapshot2.py' is used for this purpose. Given a webcam #, and image count, it will take a snapshot and stores a labled image_##.jpg into the folder 'fisheye\Calibrations', it then pause for 5 seconds (so you can move the chessboard) and repeats process for how ever many images you've specified.    
-
+</p><p>
 <img src="fisheye/Calibrations/image_1.jpg" style="width: 50% height:50%">
 Here is a detailed video that explains all of the math behind the fisheye lens correction. https://www.youtube.com/watch?v=-9He7Nu3u8s
-
+</p><p>
 Once you have your set of calibration images; we need to run a program that creats a model of the lens distortion.  The program that performs that task is 'fisheye\calibration_fisheye2.py'. This  calibration program which looks for a chessboard image reads it from multiple locations to create a lens distortion model.  It creates 3 arrays which are stored in the .\config.ini under a section called '[fisheye]' and writes three arrays K, D, and scaled_K in that section.  You can test the calibration arrays by running the 'fisheye\undistort_simple_cam.py' which reads the K,D and scaled_K lens model from the config.ini and applies it to a live camera view.  It should straighten out any lines or edges that are bowed from the fisheye lens.  If you are statisfied with the calibration then you can try the .\ball_tracking program.
-
+</p><p>
 ball_tracking.py will read the '[fisheye]' K, D, and scaled_K parameters in the config.ini file and apply use them to apply corrections to the X,Y coordinates of the ball tracking points. 
 It will use the modified points to then calculate ball_speed and HLA. The routines that undistort the points is only applied if it sees the K array under the '[fisheye]' section. 
-<p align="center">
+</p><p align="center">
 <img src="fisheye/db/Original.jpg" width="320" height="240" title="Original Image">&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
 <img src="fisheye/db/Corrected.jpg" width="320" height="240" title="Corrected Image">
-</p>
+</p><p>
 The fisheye camera correction routines are a little more complicated to setup that Alleexx's original code and it has a number of new options.  One problem I've had, is I'm using an ELP nighttime IR camera.  Unlike, a typical webcam used in Alleexx's code, the IR cam can use any color golfball.  I like the IR camera also because it can work in almost all lighting.  The balls all look like a white ball in color in IR.  However, it does require tweeking some advanced camera parameters like the exposure, hue, gamma, and gain for the camera to lock in to the ball. To help with IR camera, I've added routines that allow you to record all of the camera parameters like exposure, the auto_exposure switch, hue, staturation, brightness, whitebalance, gamma, gain etc. These can also be writen into the config.ini file under the section '[camera parameters]'. By pressing 'v' it will bring up the camera control dialog that allows you to change and tweek these values live. Once set you press 'w' and it will write the values into a the '[camera parameters]' section.  When the program is run again, it will read and setup the '[camera parameters]'.  It's also optional.  Another option is to let you see the undistorted view that's being used by the fisheye correction.  Pressing 'u' will toggle between the undistorted view and the normal view of the live video stream.  
-  
+</p><p>  
 As a test, this program has already been calibrated using an IR camera with a 3.6mm fisheye lens (~90 degree field of view).  To return it to alleexx's original code, simply remove the '[fisheye]' and '[camera parameter]' sections in the .\config.ini.  For convience, I've include executable binaries of the python code for all of the programs mentioned under the \dist\ball_tracking\ folder.  
-To run the new ball_tracking you would run it like; 'cd dist\ball_tracking' the run 'ball_tracking.exe' and it will use the config.ini for configuration.  It also contains the Calibrations\ and db\ folders for you calibration images.  
+To run the new ball_tracking you would run it like; 'cd dist\ball_tracking' the run 'ball_tracking.exe' and it will use the config.ini for configuration.  It also contains the Calibrations\ and db\ folders for you calibration images.
+</p>  
 <p>
 This version introduces a Perspective_pitch correction (perspective_pitch2.py) which will perform a perspective pitch of the image around the center horizontal line (which should be your putting line).
 The angle represents the camera angle looking down on your putt line, and will apply a perspective warp to the image based on that angle.  This should help anyone who has there camera mounted at an angle looking down to your putting surface.   This correction gets applied after the fisheye, and since the fisheye correction is optional it should work properly for standard webcams. This will adjust refine any off line putts mainly on the HLA, but also speed of offline putts.  With this adjustment, it should be possible to putt off of center to correct for some green slopes in game.  So it should add a new dimension to Sim putting.
-<p align="center">
+</p><p align="center">
 &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
 <img src="fisheye/db/Perspective_pitch_after.jpg" width="320" height="240" title="Perspective Corrected Image">
 </p>
 <p> 
 When the putting line is aligned with center row of the image we can calculate an image from the view of a camera pitched around that line. Kowning that angle, we can apply some simple trigonmetry to find the view apply a perspective transform.   This can allow us to reverse the perspective distotion by simply knowing the camera pitch angle. This all depends on your putting line matching the line the image will be pitched around.  To help establish the angle of your camera looking down at the putting line, use the program called Perspective_pitch.py.   Simply, the slider moves from 0 to 90 degrees (starting at 0), causing the live image to pitch around the putting line.  To make this easier, you may want to put a pair of rulers in the screen or other objects so you can tell when the image is alligned flat. In my case, I have to aiming sticks a couple of golf balls and some checkerboards patterns rotated around the pitch axis and transformed to an appearance as if the camera was overhead looking directly down.  
-</p?
+</p>
 <p align="center">
  <img src="fisheye/db/Perspective_pitch.jpg" width="320" height="240" title="Perspective pitch after fisheye correction">
 </p>
