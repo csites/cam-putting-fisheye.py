@@ -1,4 +1,4 @@
-# Webcam based putting simulation with fisheye and perspective corrections for GSPRO utilizing the R10 connector:
+# Webcam based putting simulation with fisheye lens and perspective corrections for GSPRO utilizing the R10 connector:
 
 ## ALL About Fisheye Lens Correction.
 Command:
