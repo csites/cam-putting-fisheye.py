@@ -89,8 +89,8 @@ if parser.has_option('putting', 'customhsv'):
 else:
     customhsv={}
 # Local stimp correction factor.   [0.0 to 2.0] 1.0 = default. 
-if parser.has_option('putting', 'stimp'):
-    stimp=float(parser.get('putting', 'stimp'))
+if parser.has_option('Local_Stimp_Ajust', 'stimp'):
+    stimp=float(parser.get('Local_Stimp_Adjust', 'stimp'))
     istimp=int(stimp * 100.0)
 else:
     stimp=100.0
@@ -622,7 +622,9 @@ def setStimp(value):
     print(value)    
     global stimp
     stimp = float(value)/100.0
-    parser.set('putting', 'stimp', str(stimp))
+    if not parser.has_section('local_stimp_adjust'):
+      parser.add_section('local_stimp_adjust')
+    parser.set('local_stimp_adjust', 'stimp', str(stimp))
     parser.write(open(CFG_FILE, "w"))
     pass    
 
@@ -1008,7 +1010,16 @@ while True:
                                             # debug out
                                             print("Time Elapsed in Sec: "+str(timeElapsedSeconds))
                                             print("Distance travelled in MM: "+str(distanceTraveledMM))
-                                            print("Speed: "+str(speed)+" MPH")
+                                            print("Speed: "+str(speed)+" MPH"),
+                                            if lstimp_speed0 == 0:
+                                                lstimp_speed0 = distanceTraveledMM / timeElapsedSeconds
+                                            else:
+                                                lstimp_speed1 = distanceTraveledMM / timeElapsedSeconds
+                                                # Insert a local stimp measurement.   It goes, stimp = (V0^2 - V1^2) / (2 * D * g)
+                                                local_stimp = (lstimp_speed0^2 - lstimp_speed1^2) / (2 * distanceTraveledMM * 9.80665)
+                                                print("Local Stimp rating: "+str(local_stimp))
+                                                lstimp_speed0 = lstimp_speed1
+                                                                                            
                                             # update the points and tims queues
                                             pts.appendleft(center)
                                             tims.appendleft(frameTime)
@@ -1122,6 +1133,7 @@ while True:
             tim2 = 0
             distanceTraveledMM = 0
             timeElapsedSeconds = 0
+            lstimp_speed0 = 0
             startCircle = (0, 0, 0)
             endCircle = (0, 0, 0)
             startPos = (0,0)
@@ -1145,6 +1157,7 @@ while True:
             tim2 = 0
             distanceTraveledMM = 0
             timeElapsedSeconds = 0
+            lstimp_speed0 = 0
             startCircle = (0, 0, 0)
             endCircle = (0, 0, 0)
             startPos = (0,0)
