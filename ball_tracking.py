@@ -353,9 +353,9 @@ pts = deque(maxlen=args["buffer"])
 tims = deque(maxlen=args["buffer"])
 fpsqueue = deque(maxlen=240)
 
-# Set this up in config.ini.
+# Initialize variables as needed.
 webcamindex = 0
-
+lstimp_speed0 = 0
 message = ""
 
 
@@ -1016,7 +1016,9 @@ while True:
                                             else:
                                                 lstimp_speed1 = distanceTraveledMM / timeElapsedSeconds
                                                 # Insert a local stimp measurement.   It goes, stimp = (V0^2 - V1^2) / (2 * D * g)
-                                                local_stimp = (lstimp_speed0^2 - lstimp_speed1^2) / (2 * distanceTraveledMM * 9.80665)
+                                                local_stimpMM = (lstimp_speed0**2 - lstimp_speed1**2) / (2 * distanceTraveledMM * 9806.65) # g=9806.65 mm/s^2.
+                                                print("local stimp mm",str(local_stimpMM))
+                                                local_stimp = local_stimpMM * 0.00328084 # ft / mm.
                                                 print("Local Stimp rating: "+str(local_stimp))
                                                 lstimp_speed0 = lstimp_speed1
                                                                                             
