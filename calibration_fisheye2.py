@@ -156,9 +156,9 @@ data = {'dim1': dim1,
 
 
 # Write out a jsaon cablibration.
-import json
-with open("fisheye_calibration_data.json", "w") as f:
-    json.dump(data, f)
+#import json
+#with open("fisheye_calibration_data.json", "w") as f:
+#    json.dump(data, f)
     
 # Create an entry in ../config.ini 
 # Note. This assume the application is one directory below where the config.ini is located.   
