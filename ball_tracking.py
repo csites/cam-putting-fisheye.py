@@ -88,9 +88,10 @@ if parser.has_option('putting', 'customhsv'):
     print(customhsv)
 else:
     customhsv={}
+    
 # Local stimp correction factor.   [0.0 to 2.0] 1.0 = default. 
-if parser.has_option('Local_Stimp_Ajust', 'stimp'):
-    stimp=float(parser.get('Local_Stimp_Adjust', 'stimp'))
+if parser.has_option('Stimp_Adjust', 'stimp'):
+    stimp=float(parser.get('Stimp_Adjust', 'stimp'))
     istimp=int(stimp * 100.0)
 else:
     stimp=100.0
@@ -622,9 +623,9 @@ def setStimp(value):
     print(value)    
     global stimp
     stimp = float(value)/100.0
-    if not parser.has_section('local_stimp_adjust'):
-      parser.add_section('local_stimp_adjust')
-    parser.set('local_stimp_adjust', 'stimp', str(stimp))
+    if not parser.has_section('Stimp_Adjust'):
+      parser.add_section('Stimp_Adjust')
+    parser.set('Stimp_Adjust', 'stimp', str(stimp))
     parser.write(open(CFG_FILE, "w"))
     pass    
 
