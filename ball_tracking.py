@@ -1028,7 +1028,7 @@ while True:
                                                 # Insert a local stimp measurement.   It goes, stimp = (V0^2 - V1^2) / (2 * D * g)
                                                 lstimpMM = abs((lspeed1 - lspeed0)) / ((ltime1 - ltime0) * 9806.65) # g=9806.65 mm/s^2.
                                                 print("lspeed1="+str(lspeed1)+" lspeed0="+str(lspeed0)+" ltime1="+str(ltime1)+" ltime0="+str(ltime0))
-                                                lstimp = lstimpMM / 0.8200
+                                                lstimp = lstimpMM / 0.8200  # Conversion factor for Coefficient of Friction to Stimp.
                                                 print("Local Stimp rating: "+str(lstimp))
                                                 lspeed0 = lspeed1
                                                                                             
