@@ -198,7 +198,7 @@ lastShotSpeed = 0
 lastShotHLA = 0 
 
 speed = 0
-
+lspeed0 = 0
 tim1 = 0
 tim2 = 0
 
@@ -355,7 +355,7 @@ fpsqueue = deque(maxlen=240)
 
 # Initialize variables as needed.
 webcamindex = 0
-lstimp_speed0 = 0
+
 message = ""
 
 
@@ -1010,17 +1010,26 @@ while True:
                                             # debug out
                                             print("Time Elapsed in Sec: "+str(timeElapsedSeconds))
                                             print("Distance travelled in MM: "+str(distanceTraveledMM))
-                                            print("Speed: "+str(speed)+" MPH"),
-                                            if lstimp_speed0 == 0:
-                                                lstimp_speed0 = distanceTraveledMM / timeElapsedSeconds
+                                            print("Speed: "+str(speed)+" MPH")
+                                            # Calculate local stimp.  ((Vf - Vi) * 0.8200) / ((tf - ti) * 9.8)m/s^2
+                                            if lpeed0 == 0:
+                                                lspeed0 = distanceTraveledMM / timeElapsedSeconds
+                                                ltime0 = timeElapsedSeconds
                                             else:
-                                                lstimp_speed1 = distanceTraveledMM / timeElapsedSeconds
+                                                lspeed1 = distanceTraveledMM / timeElapsedSeconds
+                                                ltime1 = timeElapsedSeconds
+                                                # We are decelerating so Vf < Vi so just sub Delta V
+                                                if lspeed1 < lspped0:
+                                                  temp = lspeed1
+                                                  lspeed1 = lspeed0
+                                                  lspeed0 = temp
+                                                  
                                                 # Insert a local stimp measurement.   It goes, stimp = (V0^2 - V1^2) / (2 * D * g)
-                                                local_stimpMM = (lstimp_speed0**2 - lstimp_speed1**2) / (2 * distanceTraveledMM * 9806.65) # g=9806.65 mm/s^2.
-                                                print("local stimp mm",str(local_stimpMM))
-                                                local_stimp = local_stimpMM * 0.00328084 # ft / mm.
+                                                lstimpMM = abs((lspeed1 - lspeed0)) / ((ltime1 - ltime0) * 9806.65) # g=9806.65 mm/s^2.
+                                                print("lspeed1="+str(lspeed1)+" lspeed0="+str(lspeed0)+" ltime1="+str(ltime1)+" ltime0="+str(ltime0))
+                                                local_stimp = local_stimpMM / 0.8200
                                                 print("Local Stimp rating: "+str(local_stimp))
-                                                lstimp_speed0 = lstimp_speed1
+                                                lspeed0 = lspeed1
                                                                                             
                                             # update the points and tims queues
                                             pts.appendleft(center)
@@ -1135,7 +1144,7 @@ while True:
             tim2 = 0
             distanceTraveledMM = 0
             timeElapsedSeconds = 0
-            lstimp_speed0 = 0
+            lspeed0 = 0
             startCircle = (0, 0, 0)
             endCircle = (0, 0, 0)
             startPos = (0,0)
@@ -1159,7 +1168,7 @@ while True:
             tim2 = 0
             distanceTraveledMM = 0
             timeElapsedSeconds = 0
-            lstimp_speed0 = 0
+            lspeed0 = 0
             startCircle = (0, 0, 0)
             endCircle = (0, 0, 0)
             startPos = (0,0)
