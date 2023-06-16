@@ -1020,7 +1020,7 @@ while True:
                                                 lspeed1 = distanceTraveledMM / timeElapsedSeconds
                                                 ltime1 = timeElapsedSeconds
                                                 # We are decelerating so Vf < Vi so just sub Delta V
-                                                if lspeed1 < lspped0:
+                                                if lspeed1 < lspeed0:
                                                   temp = lspeed1
                                                   lspeed1 = lspeed0
                                                   lspeed0 = temp
