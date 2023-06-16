@@ -1012,7 +1012,7 @@ while True:
                                             print("Distance travelled in MM: "+str(distanceTraveledMM))
                                             print("Speed: "+str(speed)+" MPH")
                                             # Calculate local stimp.  ((Vf - Vi) * 0.8200) / ((tf - ti) * 9.8)m/s^2
-                                            if lpeed0 == 0:
+                                            if lspeed0 == 0:
                                                 lspeed0 = distanceTraveledMM / timeElapsedSeconds
                                                 ltime0 = timeElapsedSeconds
                                             else:
