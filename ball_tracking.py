@@ -1007,30 +1007,26 @@ while True:
                                                 speed = ((distanceTraveledMM / 1000 / 1000) / (timeElapsedSeconds)) * 60 * 60 * 0.621371
                                                 if stimp:
                                                     speed *= stimp   # Local Stimp Adjustment
-                                                     
+                                                # Calculate local stimp. 0.8200 * (2 * ((Vi - Vf) / (tf - ti)) / 9.8)m/s^2  when vi > vf.  
+                                                if lspeed0 == 0:
+                                                    lspeed0 = distanceTraveledMM / timeElapsedSeconds
+                                                    ltime0 = tim1
+                                                else:
+                                                    lspeed1 = distanceTraveledMM / timeElapsedSeconds
+                                                    ltime1 = tim2
+                                                    # We need to be decelerating so Vf < Vi 
+                                                    if lspeed0 > lspeed1:
+                                                      # Insert a local stimp measurement.  
+                                                      lstimpMM = (2 * (lspeed0 - lspeed1) / (timeElapsedSeconds)) / 9806.65 # g=9806.65 mm/s**2.
+                                                      print("lspeed1="+str(lspeed1)+" lspeed0="+str(lspeed0)+" ltime1="+str(tim2)+" ltime0="+str(tim1)+" lfric="+str(lstimpMM))
+                                                      lstimp = lstimpMM / 0.8200  # Conversion factor for Coefficient of Friction to Stimp.
+                                                      print("Local Stimp rating: "+str(lstimp))
+                                                    lspeed0 = lspeed1
+ 
                                             # debug out
                                             print("Time Elapsed in Sec: "+str(timeElapsedSeconds))
                                             print("Distance travelled in MM: "+str(distanceTraveledMM))
                                             print("Speed: "+str(speed)+" MPH")
-                                            # Calculate local stimp.  ((Vf - Vi) * 0.8200) / ((tf - ti) * 9.8)m/s^2
-                                            if lspeed0 == 0:
-                                                lspeed0 = distanceTraveledMM / timeElapsedSeconds
-                                                ltime0 = timeElapsedSeconds
-                                            else:
-                                                lspeed1 = distanceTraveledMM / timeElapsedSeconds
-                                                ltime1 = timeElapsedSeconds
-                                                # We are decelerating so Vf < Vi so just sub Delta V
-                                                if lspeed1 < lspeed0:
-                                                  temp = lspeed1
-                                                  lspeed1 = lspeed0
-                                                  lspeed0 = temp
-                                                  
-                                                # Insert a local stimp measurement.   It goes, stimp = (V0^2 - V1^2) / (2 * D * g)
-                                                lstimpMM = abs((lspeed1 - lspeed0)) / ((ltime1 - ltime0) * 9806.65) # g=9806.65 mm/s^2.
-                                                print("lspeed1="+str(lspeed1)+" lspeed0="+str(lspeed0)+" ltime1="+str(ltime1)+" ltime0="+str(ltime0))
-                                                lstimp = lstimpMM / 0.8200  # Conversion factor for Coefficient of Friction to Stimp.
-                                                print("Local Stimp rating: "+str(lstimp))
-                                                lspeed0 = lspeed1
                                                                                             
                                             # update the points and tims queues
                                             pts.appendleft(center)
