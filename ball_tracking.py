@@ -659,6 +659,65 @@ def yuv2rgb(yuv):
     yuv[:, :, 1:] -= 0.5
     rgb = np.dot(yuv, m)
     return rgb
+def estimate_stimp(initial_speed, final_speed, distance):
+  """
+  Estimates the stimp of a putting green based on the initial and final speed of a golf ball.
+
+  Args:
+    initial_speed: The initial speed of the golf ball in feet per second.
+    final_speed: The final speed of the golf ball in feet per second.
+    distance: The distance that the golf ball rolled in feet.
+
+  Returns:
+    The estimated stimp of the putting green.
+ 
+   Mass and radius of a golfball.  USGA Max weight=  1.620oz. (45.93).
+   Brand                Weight(oz) Weight(gm)   
+   Titleist Pro V1	        1.601	  45.64
+   Srixon Soft Feel	        1.469	  41.66 
+   Bridgestone e12 Contact	1.331	  37.75  * Lightest
+   Pinnacle Rush	          1.615	  45.80  
+   Kirkland 3-Piece Cover	  1.67	  47.56  * Heaviest Illegal.
+   Taylormade Distance+	    1.615	  45.80
+   Top Flite XL Distance	  1.619  	45.90  * Heaviest Legal. 
+   Advantage	              1.615  	45.80
+   Wilson Triad	            1.5995	45.34
+   Titleist Reload Pro V1	  1.6091	45.61
+   Dunlop	                  1.6024	45.43
+   Callaway Chrome Soft X   1.611   45.67
+  """
+    
+  mass = 0.04564 # Pro V1 kg
+  radius = 0.0427 # m
+
+  # Acceleration due to gravity.
+  acceleration_due_to_gravity = 9.81 # m/s²
+  
+  # Moment of Inertia for a rolling sphere.
+  moment_of_inertia = (2/5) * mass * (radius ** 2)
+
+  # Calculate the work done by friction. The work done by friction is the energy lost due to friction its negative.
+  # work_done_by_friction = (1/2) * mass * (final speed)^2 - (1/2) * mass * (initial speed)^2 
+  work_done_by_friction = - (final_speed ** 2 - initial_speed ** 2) / 2 / mass * distance
+
+  # Calculate the force of friction.  Interesting note: Work done by rolling = 0. 
+  force_of_friction = work_done_by_friction / distance
+
+  # Calculate the coefficient of rolling friction.  This will be the normal of the sphere 
+  coefficient_of_rolling_friction = force_of_friction * (mass * acceleration_due_to_gravity * moment_of_inertia)
+  print("U_rolling_friction="+str(coefficient_of_rolling_friction))
+
+  # Calculate the stimp in feet using CB's constant. Arbritrary convertion factor 
+  stimp = (0.8200 * distance * 0.00218499635) / (coefficient_of_rolling_friction)
+  
+  # Convert the stimp from feet to unitless.
+  # stimp = distance / stimp 
+  
+  # Multiply the stimp by 2.5.
+  # stimp = stimp / 2.5
+
+  return stimp
+    
 
 # allow the camera or video file to warm up
 time.sleep(0.5)
@@ -1007,6 +1066,7 @@ while True:
                                                 speed = ((distanceTraveledMM / 1000 / 1000) / (timeElapsedSeconds)) * 60 * 60 * 0.621371
                                                 if stimp:
                                                     speed *= stimp   # Local Stimp Adjustment
+                                                
                                                 # Calculate local stimp. 0.8200 * (2 * ((Vi - Vf) / (tf - ti)) / 9.8)m/s^2  when vi > vf.  
                                                 if lspeed0 == 0:
                                                     lspeed0 = distanceTraveledMM / timeElapsedSeconds
@@ -1014,12 +1074,8 @@ while True:
                                                 else:
                                                     lspeed1 = distanceTraveledMM / timeElapsedSeconds
                                                     ltime1 = tim2
-                                                    # We need to be decelerating so Vf < Vi 
                                                     if lspeed0 > lspeed1:
-                                                      # Insert a local stimp measurement.  
-                                                      lstimpMM = (2 * (lspeed0 - lspeed1) / (timeElapsedSeconds)) / 9806.65 # g=9806.65 mm/s**2.
-                                                      print("lspeed1="+str(lspeed1)+" lspeed0="+str(lspeed0)+" ltime1="+str(tim2)+" ltime0="+str(tim1)+" lfric="+str(lstimpMM))
-                                                      lstimp = lstimpMM / 0.8200  # Conversion factor for Coefficient of Friction to Stimp.
+                                                      lstimp=estimated_stimp(lspeed0,lspeed1,distanceTraveledMM/1000)  
                                                       print("Local Stimp rating: "+str(lstimp))
                                                     lspeed0 = lspeed1
  
