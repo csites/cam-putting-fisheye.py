@@ -666,7 +666,8 @@ def estimate_stimp(initial_speed, final_speed, distance):
   Args:
     initial_speed: The initial speed of the golf ball in feet per second.
     final_speed: The final speed of the golf ball in feet per second.
-    distance: The distance that the golf ball rolled in feet.
+    distance: The distance that the golf ball rolled in feet. For this 
+    we assume the launch velocity is from Geooff Mangum 6.32fr/s (1.93 m/s).
 
   Returns:
     The estimated stimp of the putting green.
@@ -1075,7 +1076,7 @@ while True:
                                                     lspeed1 = distanceTraveledMM / timeElapsedSeconds
                                                     ltime1 = tim2
                                                     if lspeed0 > lspeed1:
-                                                      lstimp=estimated_stimp(lspeed0,lspeed1,distanceTraveledMM/1000)  
+                                                      lstimp=estimate_stimp(lspeed0,lspeed1,distanceTraveledMM/1000)  
                                                       print("Local Stimp rating: "+str(lstimp))
                                                     lspeed0 = lspeed1
  
