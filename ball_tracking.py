@@ -740,7 +740,7 @@ while True:
     if args.get("img", False):
         frame = cv2.imread(args["img"])
     else:
-        # check for calibration
+        # Read FRAME here and process, flip or undistort.
         ret, frame = vs.read()
         if ps4 == 1 and frame is not None:
             leftframe, rightframe = decode(frame)
@@ -754,11 +754,14 @@ while True:
             new_K = cv2.fisheye.estimateNewCameraMatrixForUndistortRectify(scaled_K, D, dim2, np.eye  (3), balance=balance)
             map1, map2 = cv2.fisheye.initUndistortRectifyMap(scaled_K, D, np.eye(3), new_K, dim3, cv2.CV_16SC2)
             frame = cv2.remap(frame, map1, map2, interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
+        # Perspective Correctikons
         if undistort_video == True and P_test == 1:
             frame = correct_perspective_image(frame)
 # FISHEYE View 
         if flip_video == True:
-            frame = cv2.flip(frame, 1)  
+            frame = cv2.flip(frame, 1)
+
+# Ballcolor Calibration?              
         if args["ballcolor"] == "calibrate":
             if record == False:
                 if args.get("debug", False):
@@ -823,10 +826,9 @@ while True:
             cv2.imshow("Putting View: Press q to exit / a for adv. settings", frame)
             cv2.waitKey(0)
             break
+        # END BALL Color calibration. 
 
     origframe = frame.copy()
-  
-    
     cv2.normalize(frame, frame, 0-darkness, 255-darkness, norm_type=cv2.NORM_MINMAX)
        
     # cropping needed for video files as they are too big
@@ -844,24 +846,21 @@ while True:
     # a series of dilations and erosions to remove any small
     # blobs left in the mask
     
-    # Find the Color Ball
-    
+# Find the Color Ball
     imgColor, mask, newHSV = myColorFinder.update(hsv, hsvVals)    
-    
+
+# Update custom ball colorin config.ini with newHSV    
     if hsvVals != newHSV:
-        print(newHSV)
-        parser.set('putting', 'customhsv', str(newHSV)) #['hmin']+newHSV['smin']+newHSV['vmin']+newHSV['hmax']+newHSV['smax']+newHSV['vmax']))
+        print(newHSV)  #['hmin']+newHSV['smin']+newHSV['vmin']+newHSV['hmax']+newHSV['smax']+newHSV['vmax']))
+        parser.set('putting', 'customhsv', str(newHSV)) 
         parser.write(open(CFG_FILE, "w"))
         hsvVals = newHSV
         print("HSV values changed - Custom Color Set to config.ini")
 
-
-
     mask = mask[y1:y2, sx1:640]
-
     # Mask now comes from ColorFinder
-    #mask = cv2.erode(mask, None, iterations=1)
-    #mask = cv2.dilate(mask, None, iterations=5)
+    # mask = cv2.erode(mask, None, iterations=1)
+    # mask = cv2.dilate(mask, None, iterations=5)
 
     # find contours in the mask and initialize the current
     # (x, y) center of the ball
@@ -895,9 +894,9 @@ while True:
     cv2.line(frame, (coord[1][0], coord[1][1]), (coord[3][0], coord[3][1]), (0, 0, 255), 2)  # Vertical right line
 
     cnts = sorted(cnts, key=cv2.contourArea, reverse=True)
+
     # only proceed if at least one contour was found
     if len(cnts) > 0:
-
         x = 0
         y = 0
         radius = 0
@@ -1067,18 +1066,6 @@ while True:
                                                 speed = ((distanceTraveledMM / 1000 / 1000) / (timeElapsedSeconds)) * 60 * 60 * 0.621371
                                                 if stimp:
                                                     speed *= stimp   # Local Stimp Adjustment
-                                                
-                                                # Calculate local stimp. 0.8200 * (2 * ((Vi - Vf) / (tf - ti)) / 9.8)m/s^2  when vi > vf.  
-                                                if lspeed0 == 0:
-                                                    lspeed0 = distanceTraveledMM / timeElapsedSeconds
-                                                    ltime0 = tim1
-                                                else:
-                                                    lspeed1 = distanceTraveledMM / timeElapsedSeconds
-                                                    ltime1 = tim2
-                                                    if lspeed0 > lspeed1:
-                                                      lstimp=estimate_stimp(lspeed0,lspeed1,distanceTraveledMM/1000)  
-                                                      print("Local Stimp rating: "+str(lstimp))
-                                                    lspeed0 = lspeed1
  
                                             # debug out
                                             print("Time Elapsed in Sec: "+str(timeElapsedSeconds))
@@ -1148,6 +1135,18 @@ while True:
             print("Time Elapsed in Sec: "+str(timeElapsedSeconds))
             print("Distance travelled in MM: "+str(distanceTraveledMM))
             print("Speed: "+str(speed)+" MPH")
+            
+            # Calculate local stimp. 0.8200 * (2 * ((Vi - Vf) / (tf - ti)) / 9.8)m/s^2  when vi > vf.  
+            if lspeed0 == 0:
+                lspeed0 = distanceTraveledMM / timeElapsedSeconds
+                ltime0 = timeElapsedSeconds
+            else:
+                lspeed1 = distanceTraveledMM / timeElapsedSeconds
+                ltime1 =  timeElapsedSeconds
+                if lspeed0 > lspeed1:
+                  lstimp=estimate_stimp(lspeed0,lspeed1,distanceTraveledMM/1000)  
+                  print("Local Stimp rating: "+str(lstimp))
+                lspeed0 = lspeed1
 
             #     ballSpeed: ballData.BallSpeed,
             #     totalSpin: ballData.TotalSpin,
