@@ -990,7 +990,7 @@ while True:
                             if (x >= coord[0][0] and entered == False and started == True):
                                 cv2.line(frame, (coord[0][0], coord[0][1]), (coord[2][0], coord[2][1]), (0, 255, 0),2)  # Changes line color to green
                                 tim1 = frameTime
-                                print("Ball Entered. Position: "+str(center))
+                                print("Ball Entered. (Center Position): "+str(center))
                                 startPos = center
                                 entered = True
                                 # update the points and tims queues
@@ -1137,7 +1137,7 @@ while True:
             print("Distance travelled in MM: "+str(distanceTraveledMM))
             print("Speed: "+str(speed)+" MPH")
             
-            lstimp=estimate_stimp(0, lspeed1, distanceTraveledMM/1000)  
+            lstimp=estimate_stimp((distanceTraveledMM/1000)/timeElapsedSeconds, 0, distanceTraveledMM/1000)  
             print("Local Stimp rating: "+str(lstimp))
  
             #     ballSpeed: ballData.BallSpeed,
