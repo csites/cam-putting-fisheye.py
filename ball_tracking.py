@@ -1122,8 +1122,9 @@ while True:
         # otherwise, compute the thickness of the line and
         # draw the connecting lines
         thickness = int(np.sqrt(args["buffer"] / float(i + 1)) * 1.5)
-        #cv2.line(frame, pts[i - 1], pts[i], (0, 0, 150), thickness)
-        # print("Point:"+str(pts[i])+"; Timestamp:"+str(tims[i]))
+        # CBS: Unremark next 2 lines.
+        cv2.line(frame, pts[i - 1], pts[i], (0, 150, 0), thickness)
+        print("Point:"+str(pts[i])+"; Timestamp:"+str(tims[i]))
 
     timeSinceEntered = (frameTime - tim1)
 
@@ -1136,18 +1137,9 @@ while True:
             print("Distance travelled in MM: "+str(distanceTraveledMM))
             print("Speed: "+str(speed)+" MPH")
             
-            # Calculate local stimp. 0.8200 * (2 * ((Vi - Vf) / (tf - ti)) / 9.8)m/s^2  when vi > vf.  
-            if lspeed0 == 0:
-                lspeed0 = distanceTraveledMM / timeElapsedSeconds
-                ltime0 = timeElapsedSeconds
-            else:
-                lspeed1 = distanceTraveledMM / timeElapsedSeconds
-                ltime1 =  timeElapsedSeconds
-                if lspeed0 > lspeed1:
-                  lstimp=estimate_stimp(lspeed0,lspeed1,distanceTraveledMM/1000)  
-                  print("Local Stimp rating: "+str(lstimp))
-                lspeed0 = lspeed1
-
+            lstimp=estimate_stimp(0, lspeed1, distanceTraveledMM/1000)  
+            print("Local Stimp rating: "+str(lstimp))
+ 
             #     ballSpeed: ballData.BallSpeed,
             #     totalSpin: ballData.TotalSpin,
             totalSpin = 0
