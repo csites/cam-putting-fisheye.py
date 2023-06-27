@@ -659,57 +659,69 @@ def yuv2rgb(yuv):
     yuv[:, :, 1:] -= 0.5
     rgb = np.dot(yuv, m)
     return rgb
-def estimate_stimp(initial_speed, final_speed, distance):
+
+def estimate_stimp(V_initial, V_final, Distance):
   """
   Estimates the stimp of a putting green based on the initial and final speed of a golf ball.
 
   Args:
-    initial_speed: The initial speed of the golf ball in feet per second.
-    final_speed: The final speed of the golf ball in feet per second.
-    distance: The distance that the golf ball rolled in feet. For this 
-    we assume the launch velocity is from Geooff Mangum 6.32fr/s (1.93 m/s).
+    V_initial = initial_speed: The initial speed of the golf ball in feet per second.
+    V_final = final_speed: The final speed of the golf ball in feet per second.
+    Distance: The distance that the golf ball rolled in meters.
 
   Returns:
     The estimated stimp of the putting green.
- 
-   Mass and radius of a golfball.  USGA Max weight=  1.620oz. (45.93).
-   Brand                Weight(oz) Weight(gm)   
-   Titleist Pro V1	        1.601	  45.64
-   Srixon Soft Feel	        1.469	  41.66 
-   Bridgestone e12 Contact	1.331	  37.75  * Lightest
-   Pinnacle Rush	          1.615	  45.80  
-   Kirkland 3-Piece Cover	  1.67	  47.56  * Heaviest Illegal.
-   Taylormade Distance+	    1.615	  45.80
-   Top Flite XL Distance	  1.619  	45.90  * Heaviest Legal. 
-   Advantage	              1.615  	45.80
-   Wilson Triad	            1.5995	45.34
-   Titleist Reload Pro V1	  1.6091	45.61
-   Dunlop	                  1.6024	45.43
-   Callaway Chrome Soft X   1.611   45.67
+
+  Discussion: 
+    We have a golfball rolling acorss a mat.  The mat is soft and the ball sinks a small 
+    amount into the mat elastically.  We need to compute the coefficient_of_rolling first, and since the stimp 
+    is proportional to the coefficient_of_rolling_friction, we multiply by a constant to get stimp.  As 
+    complicated as the model is, the we can get a good estimate based on the simple formula,
+    that COF = (V_initial^2 - V_final^2) / (2 * g * Distance * mass).
+    And stimp = COF * conversion_constant. 
+
   """
-    
+
+  # Mass and radius of a golfball.  USGA Max weight=  1.620oz. (45.93).
+  # Brand              Weight(oz) Weight(gm)   
+  # Titleist Pro V1	        1.601	  45.64
+  # Srixon Soft Feel	      1.469	  41.66 
+  # Bridgestone e12 Contact	1.331	  37.75  * Lightest
+  # Pinnacle Rush	          1.615	  45.80  
+  # Kirkland 3-Piece Cover	1.67	  47.56  * Heaviest Illegal.
+  # Taylormade Distance+	  1.615	  45.80
+  # Top Flite XL Distance	  1.619  	45.90  * Heaviest Legal. 
+  # Advantage	              1.615  	45.80
+  # Wilson Triad	          1.5995	45.34
+  # Titleist Reload Pro V1	1.6091	45.61
+  # Dunlop	                1.6024	45.43
+  # Callaway Chrome Soft X  1.611   45.67
+  
   mass = 0.04564 # Pro V1 kg
   radius = 0.0427 # m
 
   # Acceleration due to gravity.
   acceleration_due_to_gravity = 9.81 # m/s²
+
+  # Conversion factor for ft/m 
+  ft_per_m = 3.28084 # ft/m
   
   # Moment of Inertia for a rolling sphere.
-  moment_of_inertia = (2/5) * mass * (radius ** 2)
+  # moment_of_inertia = (2/5) * mass * (radius ** 2)
 
   # Calculate the work done by friction. The work done by friction is the energy lost due to friction its negative.
   # work_done_by_friction = (1/2) * mass * (final speed)^2 - (1/2) * mass * (initial speed)^2 
-  work_done_by_friction = - (final_speed ** 2 - initial_speed ** 2) / 2 / mass * distance
+  # work_done_by_friction = - (final_speed ** 2 - initial_speed ** 2) / 2 / mass * distance
 
   # Calculate the force of friction.  Interesting note: Work done by rolling = 0. 
-  force_of_friction = work_done_by_friction / distance
+  # force_of_friction = work_done_by_friction / distance
 
   # Calculate the coefficient of rolling friction.  This will be the normal of the sphere 
-  coefficient_of_rolling_friction = force_of_friction * (mass * acceleration_due_to_gravity * moment_of_inertia)
-  print("U_rolling_friction="+str(coefficient_of_rolling_friction))
+  # coefficient_of_rolling_friction = force_of_friction * (mass * acceleration_due_to_gravity * moment_of_inertia)
+  # print("U_rolling_friction="+str(coefficient_of_rolling_friction))
 
-  # Calculate the stimp in feet using CB's constant. Arbritrary convertion factor 
-  stimp = (0.8200 * distance * 0.00218499635) / (coefficient_of_rolling_friction)
+  # Calculate the stimp in feet. Arbritrary convertion factor.
+  # stimp = (0.8200 * distance * 0.00218499635) / (coefficient_of_rolling_friction)
   
   # Convert the stimp from feet to unitless.
   # stimp = distance / stimp 
@@ -717,8 +729,12 @@ def estimate_stimp(initial_speed, final_speed, distance):
   # Multiply the stimp by 2.5.
   # stimp = stimp / 2.5
 
-  return stimp
-    
+  # THe stimp coversion constant is g * correction_factor / 2 * 12.   
+  coefficient_of_rolling_friction = (V_final ** 2 - V_initial ** 2) / (2 * g * Distance * mass)
+  stimp =  0.411576129655555 / abs(coefficient_of_rolling_friction)
+  return stimp 
+
+   
 
 # allow the camera or video file to warm up
 time.sleep(0.5)
@@ -993,6 +1009,7 @@ while True:
                                 print("Ball Entered. (Center Position): "+str(center))
                                 startPos = center
                                 entered = True
+                                V_initial = ((startPos[0] - center[0] / pixelmmratio) / 1000)  / tim1  # m/s.
                                 # update the points and tims queues
                                 pts.appendleft(center)
                                 tims.appendleft(frameTime)
@@ -1020,6 +1037,7 @@ while True:
                                         print("Ball Left. Position: "+str(center))
                                         left = True
                                         endPos = center
+                                        V_final = ((endPos[0] - Center[0] / pixelmmratio) / 1000 ) / tim2  # m / sec. 
 # FISHEYE                                        
                                         # CBS: This is where we do fisheye correction on the two corredinates (startPos, and endPos).
                                         # This will create Two new positions (fstartPos, and fendPos).  Note.   Need to test undistort view alternative to this.
@@ -1066,7 +1084,7 @@ while True:
                                                 speed = ((distanceTraveledMM / 1000 / 1000) / (timeElapsedSeconds)) * 60 * 60 * 0.621371
                                                 if stimp:
                                                     speed *= stimp   # Local Stimp Adjustment
- 
+                                         
                                             # debug out
                                             print("Time Elapsed in Sec: "+str(timeElapsedSeconds))
                                             print("Distance travelled in MM: "+str(distanceTraveledMM))
@@ -1075,6 +1093,9 @@ while True:
                                             # update the points and tims queues
                                             pts.appendleft(center)
                                             tims.appendleft(frameTime)
+                                            # Now estimate stimp.
+                                            stimp = estimate_stimp(V_initial, V_final, (distanceTraveledMM / 1000))
+                                            print("Local Stimp: "+str(stimp)+" ")
                                             break
                                     else:
                                         print("False Exit after the Ball")
@@ -1137,8 +1158,6 @@ while True:
             print("Distance travelled in MM: "+str(distanceTraveledMM))
             print("Speed: "+str(speed)+" MPH")
             
-            lstimp=estimate_stimp((distanceTraveledMM/1000)/timeElapsedSeconds, 0, distanceTraveledMM/1000)  
-            print("Local Stimp rating: "+str(lstimp))
  
             #     ballSpeed: ballData.BallSpeed,
             #     totalSpin: ballData.TotalSpin,
