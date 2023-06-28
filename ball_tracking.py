@@ -701,7 +701,7 @@ def estimate_stimp(V_initial, V_final, Distance):
   radius = 0.0427 # m
 
   # Acceleration due to gravity.
-  acceleration_due_to_gravity = 9.81 # m/s²
+  acceleration_due_to_gravity = 9.81 # m/sÂ²
 
   # Conversion factor for ft/m 
   ft_per_m = 3.28084 # ft/m
@@ -1037,7 +1037,7 @@ while True:
                                         print("Ball Left. Position: "+str(center))
                                         left = True
                                         endPos = center
-                                        V_final = ((endPos[0] - Center[0] / pixelmmratio) / 1000 ) / tim2  # m / sec. 
+                                        V_final = ((endPos[0] - center[0] / pixelmmratio) / 1000 ) / tim2  # m / sec. 
 # FISHEYE                                        
                                         # CBS: This is where we do fisheye correction on the two corredinates (startPos, and endPos).
                                         # This will create Two new positions (fstartPos, and fendPos).  Note.   Need to test undistort view alternative to this.
