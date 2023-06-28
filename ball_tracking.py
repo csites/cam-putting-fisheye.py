@@ -1094,8 +1094,8 @@ while True:
                                             pts.appendleft(center)
                                             tims.appendleft(frameTime)
                                             # Now estimate stimp.
-                                            stimp = estimate_stimp(V_initial, V_final, (distanceTraveledMM / 1000))
-                                            print("Local Stimp: "+str(stimp)+" ")
+                                            local_stimp = estimate_stimp(V_initial, V_final, (distanceTraveledMM / 1000))
+                                            print("Local Stimp: "+str(local_stimp)+" ")
                                             break
                                     else:
                                         print("False Exit after the Ball")
