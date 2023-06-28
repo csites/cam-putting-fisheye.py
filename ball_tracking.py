@@ -1095,6 +1095,7 @@ while True:
                                             tims.appendleft(frameTime)
                                             # Now estimate stimp.
                                             local_stimp = estimate_stimp(V_initial, V_final, (distanceTraveledMM / 1000))
+                                            print("V_initial: "+str(V_initial)+" V_final: "+str(V_final)+" Distance: "+str((distanceTraveledMM / 1000)))
                                             print("Local Stimp: "+str(local_stimp)+" ")
                                             break
                                     else:
