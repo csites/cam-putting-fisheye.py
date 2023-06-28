@@ -702,7 +702,7 @@ def estimate_stimp(V_initial, V_final, Distance):
 
   # Acceleration due to gravity.
   acceleration_due_to_gravity = 9.81 # m/s²
-
+  g = 9.91 # m/s^2
   # Conversion factor for ft/m 
   ft_per_m = 3.28084 # ft/m
   
