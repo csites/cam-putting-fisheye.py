@@ -1030,7 +1030,7 @@ while True:
                                             similarHLA = False
                                     else:
                                         similarHLA = True
-                                    V_initial = (( x - center[0]) /  pixelmmratio) / 1000)  / (frameTime - tim1)  # m/s.    
+                                    V_initial = ((( x - center[0]) /  pixelmmratio) / 1000)  / (frameTime - tim1)  # m/s.    
                                     if ( x > (pts[0][0]+50)and similarHLA == True): # and (pow((y - (pts[0][1])), 2)) <= pow((y - (pts[1][1])), 2) 
                                         cv2.line(frame, (coord[1][0], coord[1][1]), (coord[3][0], coord[3][1]), (0, 255, 0),2)  # Changes line color to green
                                         tim2 = frameTime # Final time
