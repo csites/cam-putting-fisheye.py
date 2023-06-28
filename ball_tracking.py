@@ -1145,7 +1145,7 @@ while True:
         thickness = int(np.sqrt(args["buffer"] / float(i + 1)) * 1.5)
         # CBS: Unremark next 2 lines.
         cv2.line(frame, pts[i - 1], pts[i], (0, 150, 0), thickness)
-        print("Point:"+str(pts[i])+"; Timestamp:"+str(tims[i]))
+        # print("Point:"+str(pts[i])+"; Timestamp:"+str(tims[i]))
 
     timeSinceEntered = (frameTime - tim1)
 
