@@ -1009,7 +1009,6 @@ while True:
                                 print("Ball Entered. (Center Position): "+str(center))
                                 startPos = center
                                 entered = True
-                                V_initial = ((coord[2][0]-coord[0][0] / pixelmmratio) / 1000)  / tim1  # m/s.
                                 # update the points and tims queues
                                 pts.appendleft(center)
                                 tims.appendleft(frameTime)
@@ -1031,14 +1030,14 @@ while True:
                                             similarHLA = False
                                     else:
                                         similarHLA = True
+                                    V_initial = (( x - center[0]) /  pixelmmratio) / 1000)  / (frameTime - tim1)  # m/s.    
                                     if ( x > (pts[0][0]+50)and similarHLA == True): # and (pow((y - (pts[0][1])), 2)) <= pow((y - (pts[1][1])), 2) 
                                         cv2.line(frame, (coord[1][0], coord[1][1]), (coord[3][0], coord[3][1]), (0, 255, 0),2)  # Changes line color to green
                                         tim2 = frameTime # Final time
                                         print("Ball Left. Position: "+str(center))
                                         left = True
                                         endPos = center
-                                        V_final = ((endPos[0] - center[0] / pixelmmratio) / 1000 ) / (tim2 - tim1)  # m / sec. 
-# FISHEYE                                        
+# FISHEYE                                
                                         # CBS: This is where we do fisheye correction on the two corredinates (startPos, and endPos).
                                         # This will create Two new positions (fstartPos, and fendPos).  Note.   Need to test undistort view alternative to this.
                                         # if K_test == 1 and undistort == 0:
@@ -1071,6 +1070,7 @@ while True:
                                             endPos = e   
 # ENDFISHEYE
                                         # calculate the distance traveled by the ball in pixel
+                                        V_final = ((endPos[0] - center[0] / pixelmmratio) / 1000 ) / (tim2 - tim1)  # m / sec. 
                                         a = endPos[0] - startPos[0]
                                         b = endPos[1] - startPos[1]
                                         distanceTraveled = math.sqrt( a*a + b*b )
