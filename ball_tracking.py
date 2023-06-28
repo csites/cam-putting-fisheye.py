@@ -1070,7 +1070,8 @@ while True:
                                             endPos = e   
 # ENDFISHEYE
                                         # calculate the distance traveled by the ball in pixel
-                                        V_final = ((endPos[0] - center[0] / pixelmmratio) / 1000 ) / (tim2 - tim1)  # m / sec. 
+                                        V_final = ((endPos[0] - center[0] / pixelmmratio) / 1000 ) / (tim2 - tim1)  # m / sec.
+                                       
                                         a = endPos[0] - startPos[0]
                                         b = endPos[1] - startPos[1]
                                         distanceTraveled = math.sqrt( a*a + b*b )
@@ -1094,9 +1095,17 @@ while True:
                                             pts.appendleft(center)
                                             tims.appendleft(frameTime)
                                             # Now estimate stimp.
-                                            local_stimp = estimate_stimp(V_initial, V_final, (distanceTraveledMM / 1000))
-                                            print("V_initial: "+str(V_initial)+" V_final: "+str(V_final)+" Distance: "+str((distanceTraveledMM / 1000)))
-                                            print("tim1: "+str(tim1)+" tim2: "+str(tim2)+" delta_tim: "+str(tim2-tim1)+" Local Stimp: "+str(local_stimp))
+                                            if V_initial == 0:
+                                                V_initial = V_final
+                                                D_initial = (distanceTraveledMM / 1000)
+                                                delta_tim = tim2 - tim1
+                                            else:    
+                                                local_stimp = estimate_stimp(V_initial, V_final, D_fimal - D_initial)
+                                                print("V_initial: "+str(V_initial)+" V_final: "+str(V_final)+" Distance: "+str((distanceTraveledMM / 1000)))
+                                                print("tim1: "+str(tim1)+" tim2: "+str(tim2)+" delta_tim: "+str(tim2-tim1)+" Local Stimp: "+str(local_stimp))
+                                                V_initial = V_final
+                                                D_initial = (distanceTraveledMM / 1000)
+                                                delta_tim = tim2 - tim1
                                             break
                                     else:
                                         print("False Exit after the Ball")
