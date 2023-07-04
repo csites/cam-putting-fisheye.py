@@ -698,7 +698,7 @@ def estimate_stimp(V_initial, V_final, Distance):
   # Callaway Chrome Soft X  1.611   45.67
   
   mass = 0.04564 # Pro V1 kg
-  radius = 0.0427 # m
+  radius = 0.0427 / 2 # m
 
   # Acceleration due to gravity.
   acceleration_due_to_gravity = 9.81 # m/s²
@@ -734,6 +734,39 @@ def estimate_stimp(V_initial, V_final, Distance):
   stimp =  0.411576129655555 / abs(coefficient_of_rolling_friction)
   return stimp 
 
+
+def compute_rolling_friction(V_i, V_f, D, t):
+    
+  M = 0.04564 # Pro V1 kg
+  r = 0.04267 / 2 # m
+  g = 9.91 # m/s^2
+  
+  # Step 1: Calculate initial kinetic energy (KE_i)
+  KE_i = 0.5 * M * V_i**2
+
+  # Step 2: Calculate final kinetic energy (KE_f)
+  KE_f = 0.5 * M * V_f**2
+
+  # Step 3: Calculate change in kinetic energy (ΔKE)
+  delta_KE = KE_f - KE_i
+
+  # Step 4: Calculate work done by friction (W_friction)
+  W_friction = delta_KE
+
+  # Step 5: Calculate normal force (N)
+  g = 9.8  # acceleration due to gravity in m/s^2
+  N = M * g
+
+  # Step 6: Calculate distance over which friction force acts (s)
+  s = D - (math.pi * r)
+
+  # Step 7: Calculate force of friction (F_friction)
+  F_friction = W_friction / s
+
+  # Step 8: Calculate coefficient of rolling friction (μ)
+  u_rolling = F_friction / N
+
+  return u_rolling
    
 
 # allow the camera or video file to warm up
@@ -1030,7 +1063,7 @@ while True:
                                             similarHLA = False
                                     else:
                                         similarHLA = True
-                                    V_initial = ((( x - center[0]) /  pixelmmratio) / 1000)  / (frameTime - tim1)  # m/s.    
+                                       
                                     if ( x > (pts[0][0]+50)and similarHLA == True): # and (pow((y - (pts[0][1])), 2)) <= pow((y - (pts[1][1])), 2) 
                                         cv2.line(frame, (coord[1][0], coord[1][1]), (coord[3][0], coord[3][1]), (0, 255, 0),2)  # Changes line color to green
                                         tim2 = frameTime # Final time
@@ -1055,23 +1088,21 @@ while True:
                                               c = end_undistortedPoints[0] - start_undistortedPoints[0]
                                               d = end_undistortedPoints[1] - start_undistortedPoints[1]
                                               new_distanceTraveled = math.sqrt( c*c + d*d )  
-                                              print("Old Start Position: "+str(startPos)+" Old End Position: "+str(endPos)+ " Old Distance: "+str(distanceTraveled))
-                                              print("New Start Position: "+str(start_undistortedPoints)+" New End Position: "+str(end_undistortedPoints)+" New Distance: "+str(new_distanceTraveled))
+                                              print("Original Start Position: "+str(startPos)+" Old End Position: "+str(endPos)+ " Old Distance: "+str(distanceTraveled))
+                                              print("New fisheye Start Position: "+str(start_undistortedPoints)+" New End Position: "+str(end_undistortedPoints)+" New Distance: "+str(new_distanceTraveled))
                                               startPos = start_undistortedPoints
                                               endPos = end_undistortedPoints
                                         else:
                                               pass
+                                        # Apply perspective correction AFTER the fisheye correction.
                                         if P_test == 1:
                                             s = correct_perspective_point(startPos)
                                             e = correct_perspective_point(endPos)
-                                            print("Old Start Position: "+str(startPos)+" Old End Position: "+str(endPos)) 
-                                            print("New Start Position: "+str(s)+" New End Position: "+str(e))   
+                                            # print("Old Start Position: "+str(startPos)+" Old End Position: "+str(endPos)) 
+                                            print("New perspective Start Position: "+str(s)+" New End Position: "+str(e))   
                                             startPos = s
                                             endPos = e   
 # ENDFISHEYE
-                                        # calculate the distance traveled by the ball in pixel
-                                        V_final = ((endPos[0] - center[0] / pixelmmratio) / 1000 ) / (tim2 - tim1)  # m / sec.
-                                       
                                         a = endPos[0] - startPos[0]
                                         b = endPos[1] - startPos[1]
                                         distanceTraveled = math.sqrt( a*a + b*b )
@@ -1094,6 +1125,10 @@ while True:
                                             # update the points and tims queues
                                             pts.appendleft(center)
                                             tims.appendleft(frameTime)
+                                            
+                                            # We need to get the coefficient of rolling friction and not sliding friction.  The ball should be purely rolling
+                                            # after about first 20% of the putt, so to compute stimp, we need to wait until the ball is 20% of the width. So
+                                            # X must be greater than 128 for a 640 pixel wide image, as an estimate.
                                             # Now estimate stimp.
                                             if V_initial == 0:
                                                 V_initial = V_final
