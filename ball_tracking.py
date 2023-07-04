@@ -1076,6 +1076,7 @@ while True:
                                           if (V_started == 0):
                                             T_started = tim2  # First pass
                                             V_started = x
+                                            print("Friction 0: V_started = "+str(V_started)+" T_started = "+str(T_started))
                                             D_initial = 0
                                             D_final = 0
                                           elif ( x > V_started + 100 ):
@@ -1083,10 +1084,12 @@ while True:
                                               T_initial = tim2
                                               D_Initial = x
                                               V_initial = (((x - V_started) / pixelmmratio) * 1000) / (tim2 - T_started) # meters/sec 
+                                              print("Friction 1: V_initial = "+str(V_initial)+" T_Initial = "+str(T_initial))  
                                             elif ((x > D_initial + 100) and D_final == 0):  # 100 pixels more than the initial x.
                                               T_final = tim2
                                               D_final = x
                                               V_final = (((x - D_initial) / pixelmmratio) * 1000) / (tim2 - T_initial) #  We should have everything for stimp
+                                              print("Friction 2: V_final = "+str(V_final)+" T_final = "+str(T_final)) 
                                               U_friction = compute_rolling_friction (V_initial, V_final,  (((x - D_initial) / pixelmmratio) * 1000))
                                               print("Coefficient_of_rolling_friction",U_friction)
 # END FRICTION_ESTIMATE                                             
