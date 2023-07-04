@@ -337,10 +337,10 @@ def resizeWithAspectRatio(image, width=None, height=None, inter=cv2.INTER_AREA):
 
 # Start Splash Screen
 
-frame = cv2.imread("error.png")
-cv2.putText(frame,"Starting Video: Try MJPEG option in advanced settings for faster startup",(20,100),cv2.FONT_HERSHEY_SIMPLEX,0.5,(0, 0, 255))
-outputframe = resizeWithAspectRatio(frame, width=int(args["resize"]))
-cv2.imshow("Putting View: Press q to exit / a for adv. settings", outputframe)
+#frame = cv2.imread("error.png")
+#cv2.putText(frame,"Starting Video: Try MJPEG option in advanced settings for faster startup",(20,100),cv2.FONT_HERSHEY_SIMPLEX,0.5,(0, 0, 255))
+#outputframe = resizeWithAspectRatio(frame, width=int(args["resize"]))
+#cv2.imshow("Putting View: Press q to exit / a for adv. settings", outputframe)
 
 # Create the color Finder object set to True if you need to Find the color
 
@@ -465,7 +465,7 @@ if P_test == 1:
     src_points = np.float32([[0, putt_line], [width, putt_line], [0, height], [width, height]])
     dst_points = np.float32([[0, putt_line], [width, putt_line], [width / 2 - np.tan(pitch_rad) * putt_line, height],
                             [width / 2 + np.tan(pitch_rad) * putt_line, height]])
-    # Compute the perspective transformation matrix
+    # Compute the perspective transformation matrix for use later.
     pmatrix = cv2.getPerspectiveTransform(src_points, dst_points)
 
 # we are using x264 codec for mp4
@@ -739,7 +739,7 @@ def compute_rolling_friction(V_i, V_f, D, t):
     
   M = 0.04564 # Pro V1 kg
   r = 0.04267 / 2 # m
-  g = 9.91 # m/s^2
+  g = 9.81 # m/s^2
   
   # Step 1: Calculate initial kinetic energy (KE_i)
   KE_i = 0.5 * M * V_i**2
@@ -754,7 +754,7 @@ def compute_rolling_friction(V_i, V_f, D, t):
   W_friction = delta_KE
 
   # Step 5: Calculate normal force (N)
-  g = 9.8  # acceleration due to gravity in m/s^2
+  g = 9.81  # acceleration due to gravity in m/s^2
   N = M * g
 
   # Step 6: Calculate distance over which friction force acts (s)
@@ -1070,6 +1070,26 @@ while True:
                                         print("Ball Left. Position: "+str(center))
                                         left = True
                                         endPos = center
+# FRICTION_ESTIMATE        
+                                        if ( x > coord[3][0]+25): #Make sure we are past the start line and far enough that ball is rolling (not skipping or sliping)
+                                          if (V_started == 0):
+                                            T_started = tim2  # First pass
+                                            V_started = x
+                                            D_initial = 0
+                                            D_finial = 0
+                                          elif ( x > V_started + 100 ):
+                                            if (D_initial == 0):  # initial sample
+                                              T_initial = tim2
+                                              D_Initial = x
+                                              V_initial = (((x - V_started) / pixelmmratio) * 1000) / (tim2 - T_started) # meters/sec 
+                                            elif ((x > D_initial + 100) and D_final == 0):  # 100 pixels more than the initial x.
+                                              T_final = tim2
+                                              D_final = x
+                                              V_final = (((x - D_initial) / pixelmmratio) * 1000) / (tim2 - T_initial) #  We should have everything for stimp
+                                              U_friction = compute_rolling_friction (V_initial, V_final,  (((x - D_initial) / pixelmmratio) * 1000))
+                                              print("Coefficient_of_rolling_friction",U_friction)
+# END FRICTION_ESTIMATE                                             
+                                                                                
 # FISHEYE                                
                                         # CBS: This is where we do fisheye correction on the two corredinates (startPos, and endPos).
                                         # This will create Two new positions (fstartPos, and fendPos).  Note.   Need to test undistort view alternative to this.
@@ -1094,6 +1114,8 @@ while True:
                                               endPos = end_undistortedPoints
                                         else:
                                               pass
+# ENDFISHEYE
+# PERSPECTIVE CORRECTION                                            
                                         # Apply perspective correction AFTER the fisheye correction.
                                         if P_test == 1:
                                             s = correct_perspective_point(startPos)
@@ -1102,7 +1124,7 @@ while True:
                                             print("New perspective Start Position: "+str(s)+" New End Position: "+str(e))   
                                             startPos = s
                                             endPos = e   
-# ENDFISHEYE
+# END PERSPECTIVE CORRECTION
                                         a = endPos[0] - startPos[0]
                                         b = endPos[1] - startPos[1]
                                         distanceTraveled = math.sqrt( a*a + b*b )
@@ -1125,22 +1147,7 @@ while True:
                                             # update the points and tims queues
                                             pts.appendleft(center)
                                             tims.appendleft(frameTime)
-                                            
-                                            # We need to get the coefficient of rolling friction and not sliding friction.  The ball should be purely rolling
-                                            # after about first 20% of the putt, so to compute stimp, we need to wait until the ball is 20% of the width. So
-                                            # X must be greater than 128 for a 640 pixel wide image, as an estimate.
-                                            # Now estimate stimp.
-                                            if V_initial == 0:
-                                                V_initial = V_final
-                                                D_initial = (distanceTraveledMM / 1000)
-                                                delta_tim = tim2 - tim1
-                                            else:    
-                                                local_stimp = estimate_stimp(V_initial, V_final, D_fimal - D_initial)
-                                                print("V_initial: "+str(V_initial)+" V_final: "+str(V_final)+" Distance: "+str((distanceTraveledMM / 1000)))
-                                                print("tim1: "+str(tim1)+" tim2: "+str(tim2)+" delta_tim: "+str(tim2-tim1)+" Local Stimp: "+str(local_stimp))
-                                                V_initial = V_final
-                                                D_initial = (distanceTraveledMM / 1000)
-                                                delta_tim = tim2 - tim1
+ 
                                             break
                                     else:
                                         print("False Exit after the Ball")
