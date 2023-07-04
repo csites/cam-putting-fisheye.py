@@ -183,6 +183,7 @@ startPos = (0,0)
 endPos = (0,0)
 startTime = time.time()
 pixelmmratio = 0
+V_started = 0
 
 # initialize variable to store start candidates of balls
 startCandidates = []
@@ -1076,7 +1077,7 @@ while True:
                                             T_started = tim2  # First pass
                                             V_started = x
                                             D_initial = 0
-                                            D_finial = 0
+                                            D_final = 0
                                           elif ( x > V_started + 100 ):
                                             if (D_initial == 0):  # initial sample
                                               T_initial = tim2
@@ -1261,6 +1262,7 @@ while True:
             distanceTraveledMM = 0
             timeElapsedSeconds = 0
             lspeed0 = 0
+            V_started = 0
             startCircle = (0, 0, 0)
             endCircle = (0, 0, 0)
             startPos = (0,0)
@@ -1285,6 +1287,7 @@ while True:
             distanceTraveledMM = 0
             timeElapsedSeconds = 0
             lspeed0 = 0
+            V_started = 0
             startCircle = (0, 0, 0)
             endCircle = (0, 0, 0)
             startPos = (0,0)
