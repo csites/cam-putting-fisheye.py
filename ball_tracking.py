@@ -736,7 +736,7 @@ def estimate_stimp(V_initial, V_final, Distance):
   return stimp 
 
 
-def compute_rolling_friction(V_i, V_f, D, t):
+def compute_rolling_friction(V_i, V_f, D):
     
   M = 0.04564 # Pro V1 kg
   r = 0.04267 / 2 # m
