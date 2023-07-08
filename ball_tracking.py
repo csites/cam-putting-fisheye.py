@@ -1108,27 +1108,31 @@ while True:
                                             endPos = e   
 # END PERSPECTIVE CORRECTION
 # FRICTION_ESTIMATE        
-                                        if ( endPos[0] > coord[3][0]+25): #Make sure we are past the start line and far enough that ball is rolling (not skipping or sliping)
+                                        if ( endPos[0] > coord[3][0]+50): #Make sure we are past the start line and far enough that ball is rolling (not skipping or sliping) typically 20% of the frame  So 128 on a screen of 640 pixles.
                                           if (V_started == 0):
                                             T_started = tim2  # First pass
                                             V_started = endPos[0] # First corrected x position.
-                                            print("Friction 0: V_started = "+str(V_started)+" T_started = "+str(T_started))
+                                            S_started = "Friction 0: V_started="+str(V_started)+" T_started="+str(T_started)+" Coord[3][0]+50="+str(coord[3][0]+50)
                                             D_initial = 0
                                             D_final = 0
+                                            S_initial=""
+                                            S_final_a=""
+                                            S_final_b=""
+                                            S_final_c=""                                      
                                           elif ( endPos[0] > V_started + 100 ):
                                             if (D_initial == 0):  # initial sample
                                               T_initial = tim2
                                               D_initial = endPos[0]
                                               V_initial = ((D_initial - V_started) / (pixelmmratio * 1000)) / (tim2 - T_started) # meters/sec 
-                                              print("Friction 1: V_initial = "+str(V_initial)+" T_Initial = "+str(T_initial))  
+                                              S_initial = "Friction 1: V_initial="+str(V_initial)+" T_Initial="+str(T_initial)+" D_initial="+str(D_initial)  
                                             elif (( endPos[0] > D_initial + 100) and D_final == 0):  # 100 pixels more than the initial x.
                                               T_final = tim2
                                               D_final = endPos[0]
-                                              print("D_final = x:"+str(x)+" - D:"+str(D_initial)+" / Pix:"+str(pixelmmratio)+"* 1000 / ("+str(tim2 - T_initial)+") ")   
-                                              V_final = ((D_final - D_initial) / (pixelmmratio * 1000)) / (tim2 - T_initial) #  We should have everything for stimp
-                                              print("Friction 2: V_final = "+str(V_final)+" T_final = "+str(T_final)+" pixelmmratio = "+str(pixelmmratio)) 
+                                              S_final_a = "Friction 2a: D_final="+str(endPos[0])+" - D_initial="+str(D_initial)+" / Pix:"+str(pixelmmratio)+"* 1000 / ("+str(T_final - T_initial)+") "   
+                                              V_final = ((D_final - D_initial) / (pixelmmratio * 1000)) / (T_final - T_initial) #  We should have everything for stimp
+                                              S_final_b = "Friction 2b: V_final="+str(V_final)+" T_final="+str(T_final)+" pixelmmratio="+str(pixelmmratio) 
                                               U_friction = compute_rolling_friction (V_initial, V_final, (D_final - D_initial) / (pixelmmratio * 1000))
-                                              print("Coefficient_of_rolling_friction",U_friction)
+                                              S_final_c = "Coefficient_of_rolling_friction:"+str(U_friction)
 # END FRICTION_ESTIMATE                                             
 
                                         a = endPos[0] - startPos[0]
@@ -1149,7 +1153,11 @@ while True:
                                             print("Time Elapsed in Sec: "+str(timeElapsedSeconds))
                                             print("Distance travelled in MM: "+str(distanceTraveledMM))
                                             print("Speed: "+str(speed)+" MPH")
-                                                                                            
+                                            print(S_started)
+                                            print(S_initial)
+                                            print(S_final_a)
+                                            print(S_final_b)
+                                            print(S_final_c)                                                
                                             # update the points and tims queues
                                             pts.appendleft(center)
                                             tims.appendleft(frameTime)
