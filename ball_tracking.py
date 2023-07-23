@@ -1157,7 +1157,7 @@ while True:
                                             T_final = tim2
                                             D_final = endPos[0]
                                             S_final_a = "Friction 2a: D_final="+str(endPos[0])+" - D_initial="+str(D_initial)+" / Pix:"+str(pixelmmratio)+"* 1000 / ("+str(T_final - T_initial)+") "   
-                                            V_final = (((D_final - D_initial) / pixelmmratio) * 1000) / (T_final - T_initial) #  We should have everything for stimp
+                                            V_final = ((D_final - D_initial) / (pixelmmratio * 1000)) / (T_final - T_initial) #  We should have everything for stimp
                                             S_final_b = "Friction 2b: V_final="+str(V_final)+" T_final="+str(T_final)+" pixelmmratio="+str(pixelmmratio) 
                                             U_friction = compute_rolling_friction (V_initial, V_final, (D_final - D_initial) / (pixelmmratio * 1000))
                                             U_stimp =  0.411576129655555 /  abs(U_friction)
@@ -1254,10 +1254,10 @@ while True:
             print("Speed: "+str(speed)+" MPH")
 # Begin: Inject local stimp measure.
             v_final = (distanceTraveledMM / 1000) / timeElapsedSeconds
-            l_stimp = Compute_stimp(V_initial, v_final, ( (D_final - D_initial) / (pixelmmratio * 1000) ), (T_final - T_initial))
-            print("Local stimp: "+str(l_stimp)+" V_initial="+str(V_initial)+" m/s  V_final="+str(v_final)+" m/s")
-            print("Local stimp distance measured: "+str( (D_final - D_initial) / (pixelmmratio * 1000) )+"meters.   Elaspsed time: "+str(( - T_initial))+" sec")
-            
+            l_stimp = Compute_stimp(V_initial, V_final, ((D_final - D_initial) / (pixelmmratio * 1000)), (T_final - T_initial))
+            print("Local stimp: ("+str(l_stimp)+") V_initial="+str(V_initial)+" m/s V_final="+str(V_final)+" m/s v_final="+str(v_final)+" m/s")
+            print("Local stimp distance measured: "+str( (D_final - D_initial) / (pixelmmratio * 1000) )+" meters.   Elaspsed time: "+str((T_final - T_initial))+" sec")
+    
 # end local stimp.
              
  
