@@ -1250,7 +1250,7 @@ while True:
             print("Speed: "+str(speed)+" MPH")
 # Begin: Inject local stimp measure.
             v_final = (distanceTraveledMM / 1000) / timeElapsedSeconds
-            l_stimp = compute_stimp(V_initial, v_final, ((distanceTraveledMM - (D_initial / pixelmmratio)) / 1000), (timeElapsedSeconds - T_initial))
+            l_stimp = Compute_stimp(V_initial, v_final, ((distanceTraveledMM - (D_initial / pixelmmratio)) / 1000), (timeElapsedSeconds - T_initial))
             print("Local stimp: ", str(l_stimp) + " V_initial="+str(V_initial)+" m/s  V_final="+str(v_final)+" m/s")
             print("Local stimp distance measured: "+str(distanceTraveledMM - (D_initial / pixelmmratio))+" Elaspsed time: "+str((timeElapsedSeconds - T_initial))+" sec")
             
