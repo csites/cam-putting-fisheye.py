@@ -798,7 +798,8 @@ def compute_rolling_friction(V_i, V_f, D):
 time.sleep(0.5)
 
 previousFrame = cv2.Mat
-V_started = ""
+V_started = 0
+S_started = ""
 
 while True:
     # set the frameTime
