@@ -1141,6 +1141,7 @@ while True:
                                             S_started = "Friction 0: V_started="+str(V_started)+" T_started="+str(T_started)+" Coord[3][0]+50="+str(coord[3][0]+50)
                                             V_started = 0
                                             D_initial = 0
+                                            V_initial = 0
                                             D_final = 0
                                             S_initial=""
                                             S_final_a=""
@@ -1253,7 +1254,7 @@ while True:
             print("Speed: "+str(speed)+" MPH")
 # Begin: Inject local stimp measure.
             v_final = (distanceTraveledMM / 1000) / timeElapsedSeconds
-            l_stimp = Compute_stimp(V_initial, v_final, ((distanceTraveledMM - (D_initial / pixelmmratio)) / 1000), (timeElapsedSeconds - T_initial))
+            l_stimp = Compute_stimp(V_initial, v_final, ((distanceTraveledMM - (D_initial / pixelmmratio)), (timeElapsedSeconds - T_initial))
             print("Local stimp: ", str(l_stimp) + " V_initial="+str(V_initial)+" m/s  V_final="+str(v_final)+" m/s")
             print("Local stimp distance measured: "+str(distanceTraveledMM - (D_initial / pixelmmratio))+" Elaspsed time: "+str((timeElapsedSeconds - T_initial))+" sec")
             
