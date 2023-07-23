@@ -1149,7 +1149,7 @@ while True:
                                             if (D_initial == 0):  # initial sample
                                               T_initial = tim2
                                               D_initial = endPos[0]
-                                              V_initial = (((D_initial - V_started) / pixelmmratio) * 1000) / (tim2 - T_started) # meters/sec 
+                                              V_initial = (((D_initial - V_started) / pixelmmratio) * 1000) / (T_initial - T_started) # meters/sec 
                                               S_initial = "Friction 1: V_initial="+str(V_initial)+" T_Initial="+str(T_initial)+" D_initial="+str(D_initial)  
                                             elif (( endPos[0] > D_initial + 100) and D_final == 0):  # 100 pixels more than the initial x.
                                               T_final = tim2
