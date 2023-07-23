@@ -1147,21 +1147,20 @@ while True:
                                             S_final_a=""
                                             S_final_b=""
                                             S_final_c=""                                      
-                                          elif ( endPos[0] > D_started + 50 ):
-                                            if (D_initial == 0):  # initial sample
-                                              T_initial = tim2
-                                              D_initial = endPos[0]
-                                              V_initial = ( ( (D_initial - D_started) / pixelmmratio) / 1000) / (T_initial - T_started) # meters/sec 
-                                              S_initial = "Friction 1: V_initial="+str(V_initial)+" T_Initial="+str(T_initial)+" D_initial="+str(D_initial)  
-                                            elif (( endPos[0] > D_initial + 100) and D_final == 0):  # 100 pixels more than the initial x.
-                                              T_final = tim2
-                                              D_final = endPos[0]
-                                              S_final_a = "Friction 2a: D_final="+str(endPos[0])+" - D_initial="+str(D_initial)+" / Pix:"+str(pixelmmratio)+"* 1000 / ("+str(T_final - T_initial)+") "   
-                                              V_final = (((D_final - D_initial) / pixelmmratio) * 1000) / (T_final - T_initial) #  We should have everything for stimp
-                                              S_final_b = "Friction 2b: V_final="+str(V_final)+" T_final="+str(T_final)+" pixelmmratio="+str(pixelmmratio) 
-                                              U_friction = compute_rolling_friction (V_initial, V_final, (D_final - D_initial) / (pixelmmratio * 1000))
-                                              U_stimp =  0.411576129655555 /  abs(U_friction)
-                                              S_final_c = "Coefficient_of_rolling_friction:"+str(U_friction)+"U_Stimp="+str(U_stimp)
+                                        elif (D_initial == 0):  # initial sample
+                                            T_initial = tim2
+                                            D_initial = endPos[0]
+                                            V_initial = ( ( (D_initial - D_started) / pixelmmratio) / 1000) / (T_initial - T_started) # meters/sec 
+                                            S_initial = "Friction 1: V_initial="+str(V_initial)+" T_Initial="+str(T_initial)+" D_initial="+str(D_initial)  
+                                        elif (D_final == 0):  # 100 pixels more than the initial x.
+                                            T_final = tim2
+                                            D_final = endPos[0]
+                                            S_final_a = "Friction 2a: D_final="+str(endPos[0])+" - D_initial="+str(D_initial)+" / Pix:"+str(pixelmmratio)+"* 1000 / ("+str(T_final - T_initial)+") "   
+                                            V_final = (((D_final - D_initial) / pixelmmratio) * 1000) / (T_final - T_initial) #  We should have everything for stimp
+                                            S_final_b = "Friction 2b: V_final="+str(V_final)+" T_final="+str(T_final)+" pixelmmratio="+str(pixelmmratio) 
+                                            U_friction = compute_rolling_friction (V_initial, V_final, (D_final - D_initial) / (pixelmmratio * 1000))
+                                            U_stimp =  0.411576129655555 /  abs(U_friction)
+                                            S_final_c = "Coefficient_of_rolling_friction:"+str(U_friction)+"U_Stimp="+str(U_stimp)
 # END FRICTION_ESTIMATE                                             
 
                                         a = endPos[0] - startPos[0]
