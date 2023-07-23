@@ -1137,19 +1137,20 @@ while True:
                                         if ( endPos[0] > coord[3][0]+50): #Make sure we are past the start line and far enough that ball is rolling (not skipping or sliping) typically 20% of the frame  So 128 on a screen of 640 pixles.
                                           if (V_started == 0):
                                             T_started = tim2  # First pass
-                                            V_started = endPos[0] # First corrected x position.
+                                            D_started = endPos[0] # First corrected x position.
                                             S_started = "Friction 0: V_started="+str(V_started)+" T_started="+str(T_started)+" Coord[3][0]+50="+str(coord[3][0]+50)
+                                            V_started = 0
                                             D_initial = 0
                                             D_final = 0
                                             S_initial=""
                                             S_final_a=""
                                             S_final_b=""
                                             S_final_c=""                                      
-                                          elif ( endPos[0] > V_started + 100 ):
+                                          elif ( endPos[0] > D_started + 100 ):
                                             if (D_initial == 0):  # initial sample
                                               T_initial = tim2
                                               D_initial = endPos[0]
-                                              V_initial = (((D_initial - V_started) / pixelmmratio) * 1000) / (T_initial - T_started) # meters/sec 
+                                              V_initial = ( ( (D_initial - D_started) / pixelmmratio) / 1000) / (T_initial - T_started) # meters/sec 
                                               S_initial = "Friction 1: V_initial="+str(V_initial)+" T_Initial="+str(T_initial)+" D_initial="+str(D_initial)  
                                             elif (( endPos[0] > D_initial + 100) and D_final == 0):  # 100 pixels more than the initial x.
                                               T_final = tim2
