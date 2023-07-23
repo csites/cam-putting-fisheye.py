@@ -1139,9 +1139,10 @@ while True:
                                             T_started = tim2  # First pass
                                             D_started = endPos[0] # First corrected x position.
                                             S_started = "Friction 0: V_started="+str(V_started)+" T_started="+str(T_started)+" Coord[3][0]+50="+str(coord[3][0]+50)
-                                            V_started = 0
+                                            V_started = 1
                                             D_initial = 0
                                             V_initial = 0
+                                            T_initial = 0
                                             D_final = 0
                                             S_initial=""
                                             S_final_a=""
