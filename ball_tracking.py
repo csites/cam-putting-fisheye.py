@@ -734,6 +734,30 @@ def estimate_stimp(V_initial, V_final, Distance):
   coefficient_of_rolling_friction = (V_final ** 2 - V_initial ** 2) / (2 * g * Distance * mass)
   stimp =  0.411576129655555 / abs(coefficient_of_rolling_friction)
   return stimp 
+  
+def Compute_stimp(vi, vf, d, t):
+  """Computes the stimp of a golf green.
+
+  Args:
+    vi: The initial velocity of the golf ball in meters per second.
+    vf: The final velocity of the golf ball in meters per second.
+    d: The distance traveled by the golf ball in meters.
+    t: The time interval in seconds.
+
+  Returns:
+    The stimp of the golf green in feet.
+  """
+
+  # Calculate the rolling resistance of the golf ball.
+  rolling_resistance = (vi - vf) / (d / t)
+
+  # Calculate the stimp of the golf green.
+  stimp = d / (vi * (1 - rolling_resistance))
+
+  # Convert the stimp from meters to feet.
+  stimp = stimp * 3.28084
+
+  return stimp
 
 
 def compute_rolling_friction(V_i, V_f, D):
@@ -798,7 +822,7 @@ while True:
         # flip image on y-axis
         if flipImage == 1 and videofile == False:	
             frame = cv2.flip(frame, flipImage)
-# FISHEYE View           
+# FISHEYE View :  Note, this may be wrong since we correct for fisheye later and this would repeat that correction.          
         if undistort_video == True and K_test == 1:
             dim3 = dim2 = frame.shape[:2][::-1]
             new_K = cv2.fisheye.estimateNewCameraMatrixForUndistortRectify(scaled_K, D, dim2, np.eye  (3), balance=balance)
@@ -1224,7 +1248,14 @@ while True:
             print("Time Elapsed in Sec: "+str(timeElapsedSeconds))
             print("Distance travelled in MM: "+str(distanceTraveledMM))
             print("Speed: "+str(speed)+" MPH")
+# Begin: Inject local stimp measure.
+            v_final = (distanceTraveledMM / 1000) / timeElapsedSeconds
+            l_stimp = compute_stimp(v_iniial, v_final, ((distanceTraveledMM - (d_initial / pixelmmratio)) / 1000), (timeElapsedSeconds - t_initial))
+            print("Local stimp: ", str(l_stimp) + " V_initial="+str(v_initial)+" m/s  V_final="+str(v_final)+" m/s")
+            print("Local stimp distance measured: "+str(distanceTraveledMM - (d_initial / pixelmmratio))+" Elaspsed time: "+str((timeElapsedSeconds - t_initial))+" sec")
             
+# end local stimp.
+             
  
             #     ballSpeed: ballData.BallSpeed,
             #     totalSpin: ballData.TotalSpin,
