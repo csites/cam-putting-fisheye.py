@@ -1149,12 +1149,12 @@ while True:
                                                 S_final_a=""
                                                 S_final_b=""
                                                 S_final_c=""                                      
-                                            elif (D_initial == 0):  # initial sample
+                                            elif (D_initial == 0 and endPos[0] > 250):  # initial sample
                                                 T_initial = tim2
                                                 D_initial = endPos[0]
                                                 V_initial = ( ( (D_initial - D_started) / pixelmmratio) / 1000) / (T_initial - T_started) # meters/sec 
                                                 S_initial = "Friction 1: V_initial="+str(V_initial)+" T_Initial="+str(T_initial)+" D_initial="+str(D_initial)  
-                                            elif (D_final == 0):  # 100 pixels more than the initial x.
+                                            elif (D_final == 0 and endPos[0] > 300):  # 100 pixels more than the initial x.
                                                 T_final = tim2
                                                 D_final = endPos[0]
                                                 S_final_a = "Friction 2a: D_final="+str(endPos[0])+" - D_initial="+str(D_initial)+" / Pix:"+str(pixelmmratio)+"* 1000 / ("+str(T_final - T_initial)+") "   
@@ -1259,9 +1259,10 @@ while True:
                 l_stimp = Compute_stimp(V_initial, V_final, ((D_final - D_initial) / (pixelmmratio * 1000)), (T_final - T_initial))
                 print("Local stimp: ("+str(l_stimp)+") V_initial="+str(V_initial)+" m/s V_final="+str(V_final)+" m/s v_final="+str(v_final)+" m/s")
                 print("Local stimp distance measured: "+str( (D_final - D_initial) / (pixelmmratio * 1000) )+" meters.   Elaspsed time: "+str((T_final - T_initial))+" sec")
+                V_started = 0
             else:
                 print("No V_start... No Local_stimp")
-            
+                            
 # end local stimp.
              
  
