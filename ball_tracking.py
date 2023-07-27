@@ -1135,7 +1135,7 @@ while True:
 # END PERSPECTIVE CORRECTION
 
 # FRICTION_ESTIMATE
-                                        if (endPos[0] > 200):
+                                        if (endPos[0] > int(width * 0.20)): # 20% of the width should have the ball decellerating.
                                             if (V_started == 0):
                                                 T_started = tim2  # First pass
                                                 D_started = endPos[0] # First corrected x position.
@@ -1149,19 +1149,19 @@ while True:
                                                 S_final_a=""
                                                 S_final_b=""
                                                 S_final_c=""                                      
-                                            elif (D_initial == 0 and endPos[0] > 250):  # initial sample
+                                            elif (D_initial == 0 and endPos[0] > int(width * 0.40)):  # initial sample
                                                 T_initial = tim2
                                                 D_initial = endPos[0]
                                                 V_initial = ( ( (D_initial - D_started) / pixelmmratio) / 1000) / (T_initial - T_started) # meters/sec 
                                                 S_initial = "Friction 1: V_initial="+str(V_initial)+" T_Initial="+str(T_initial)+" D_initial="+str(D_initial)  
-                                            elif (D_final == 0 and endPos[0] > 300):  # 100 pixels more than the initial x.
+                                            elif (D_final == 0 and endPos[0] > int(width * 0.70)):  # 100 pixels more than the initial x.
                                                 T_final = tim2
                                                 D_final = endPos[0]
                                                 S_final_a = "Friction 2a: D_final="+str(endPos[0])+" - D_initial="+str(D_initial)+" / Pix:"+str(pixelmmratio)+"* 1000 / ("+str(T_final - T_initial)+") "   
                                                 V_final = ((D_final - D_initial) / (pixelmmratio * 1000)) / (T_final - T_initial) #  We should have everything for stimp
                                                 S_final_b = "Friction 2b: V_final="+str(V_final)+" T_final="+str(T_final)+" pixelmmratio="+str(pixelmmratio) 
                                                 U_friction = compute_rolling_friction (V_initial, V_final, (D_final - D_initial) / (pixelmmratio * 1000))
-                                                U_stimp =  0.411576129655555 /  abs(U_friction)
+                                                U_stimp =  compute_stimp(V_initial, V_final,((D_final - D_initial) / (pixelmmratio * 1000)), T_final - T_initial) 
                                                 S_final_c = "Coefficient_of_rolling_friction:"+str(U_friction)+"U_Stimp="+str(U_stimp)
 # END FRICTION_ESTIMATE                                             
 
@@ -1239,7 +1239,7 @@ while True:
         # otherwise, compute the thickness of the line and
         # draw the connecting lines
         thickness = int(np.sqrt(args["buffer"] / float(i + 1)) * 1.5)
-        # CBS: Unremark next 2 lines.
+        
         cv2.line(frame, pts[i - 1], pts[i], (0, 150, 0), thickness)
         # print("Point:"+str(pts[i])+"; Timestamp:"+str(tims[i]))
 
@@ -1252,20 +1252,7 @@ while True:
             print("----- Shot Complete --------")
             print("Time Elapsed in Sec: "+str(timeElapsedSeconds))
             print("Distance travelled in MM: "+str(distanceTraveledMM))
-            print("Speed: "+str(speed)+" MPH")
-# Begin: Inject local stimp measure.
-            v_final = (distanceTraveledMM / 1000) / timeElapsedSeconds
-            if (V_started != 0): 
-                l_stimp = Compute_stimp(V_initial, V_final, ((D_final - D_initial) / (pixelmmratio * 1000)), (T_final - T_initial))
-                print("Local stimp: ("+str(l_stimp)+") V_initial="+str(V_initial)+" m/s V_final="+str(V_final)+" m/s v_final="+str(v_final)+" m/s")
-                print("Local stimp distance measured: "+str( (D_final - D_initial) / (pixelmmratio * 1000) )+" meters.   Elaspsed time: "+str((T_final - T_initial))+" sec")
-                V_started = 0
-            else:
-                print("No V_start... No Local_stimp")
-                            
-# end local stimp.
-             
- 
+            
             #     ballSpeed: ballData.BallSpeed,
             #     totalSpin: ballData.TotalSpin,
             totalSpin = 0
