@@ -1158,7 +1158,7 @@ while True:
                                                 T_final = tim2
                                                 D_final = endPos[0]
                                                 S_final_a = "Friction 2a: D_final="+str(endPos[0])+" - D_initial="+str(D_initial)+" / Pix:"+str(pixelmmratio)+"* 1000 / ("+str(T_final - T_initial)+") "   
-                                                V_final = (((D_final - D_initial) / pixelmmratio) * 1000) / (T_final - T_initial) #  We should have everything for stimp
+                                                V_final = (((D_final - D_initial) / pixelmmratio) / 1000) / (T_final - T_initial) #  We should have everything for stimp
                                                 S_final_b = "Friction 2b: V_final="+str(V_final)+" T_final="+str(T_final)+" pixelmmratio="+str(pixelmmratio) 
                                                 U_friction = compute_rolling_friction (V_initial, V_final, (D_final - D_initial) / (pixelmmratio * 1000))
                                                 U_stimp =  compute_stimp(V_initial, V_final, (((D_final - D_initial) / pixelmmratio) * 1000), (T_final - T_initial)) 
