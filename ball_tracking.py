@@ -759,6 +759,72 @@ def compute_stimp(vi, vf, d, t):
 
   return stimp
 
+import math
+
+def coefficient_of_rolling_friction(initial_velocity, final_velocity, distance, time):
+  """Computes the coefficient of rolling friction for a golfball rolling on a horizontal flat mat.
+
+  Args:
+    initial_velocity: The initial velocity of the golfball in meters per second.
+    final_velocity: The final velocity of the golfball in meters per second.
+    distance: The distance between the two velocity measurements in meters.
+    time: The time between the two velocity measurements in seconds.
+
+  Returns:
+    The coefficient of rolling friction.
+  """
+  M = 0.04564 # Pro V1 kg
+  r = 0.04267 / 2 # m
+  g = 9.81 # m/s^2
+  
+  # Calculate the change in kinetic energy of the golfball.
+  change_in_kinetic_energy = (1/2) * M * (final_velocity ** 2 - initial_velocity ** 2)
+
+  # Calculate the work done by rolling friction.
+  work_done_by_rolling_friction = change_in_kinetic_energy - (g * 2 * 10 ** -3) * time
+
+  # Calculate the coefficient of rolling friction.
+  coefficient_of_rolling_friction = work_done_by_rolling_friction / (distance * time)
+
+  return coefficient_of_rolling_friction
+
+
+def alt_compute_rolling_friction(V_i, V_f, D, t):
+    
+  M = 0.04564 # Pro V1 kg
+  r = 0.04267 / 2 # m
+  g = 9.81 # m/s^2
+  
+  # Step 1: Calculate initial kinetic energy (KE_i)
+  KE_i = 0.5 * M * V_i**2
+
+  # Step 2: Calculate final kinetic energy (KE_f)
+  KE_f = 0.5 * M * V_f**2
+
+  # Step 3: Calculate change in kinetic energy (ΔKE)
+  delta_KE = KE_f - KE_i
+
+  # Step 4: Calculate work done by friction (W_friction)
+  W_friction = delta_KE
+
+  # Step 5: Calculate normal force (N)
+  g = 9.81  # acceleration due to gravity in m/s^2
+  N = M * g
+
+  # Step 6: Calculate distance over which friction force acts (s)
+  s = D - (math.pi * r)
+
+  # Step 7: Calculate force of friction (F_friction)
+  F_friction = W_friction / s
+
+  # Step 8: Calculate coefficient of rolling friction (μ)
+  u_rolling = F_friction / N
+
+  # Step 9: Calculate coefficient of rolling friction with time (μ_t)
+  μ_t = u_rolling / t
+
+  return μ_t
+
 
 def compute_rolling_friction(V_i, V_f, D):
     
@@ -1135,7 +1201,7 @@ while True:
 # END PERSPECTIVE CORRECTION
 
 # FRICTION_ESTIMATE
-                                        if (endPos[0] > int(width * 0.20)): # 20% of the width should have the ball decellerating.
+                                        if (endPos[0] > int(width * 0.20)): # by 20% of the image width, we should have the ball decellerating.
                                             if (V_started == 0):
                                                 T_started = tim2  # First pass
                                                 D_started = endPos[0] # First corrected x position.
@@ -1149,20 +1215,21 @@ while True:
                                                 S_final_a=""
                                                 S_final_b=""
                                                 S_final_c=""                                      
-                                            elif (D_initial == 0 and endPos[0] > int(width * 0.40)):  # initial sample
+                                            elif (D_initial == 0 and endPos[0] > int(width * 0.40)):  # initial sample at 40% width 
                                                 T_initial = tim2
                                                 D_initial = endPos[0]
                                                 V_initial = ( ( (D_initial - D_started) / pixelmmratio) / 1000) / (T_initial - T_started) # meters/sec 
                                                 S_initial = "Friction 1: V_initial="+str(V_initial)+" T_Initial="+str(T_initial)+" D_initial="+str(D_initial)  
-                                            elif (D_final == 0 and endPos[0] > int(width * 0.70)):  # 100 pixels more than the initial x.
+                                            elif (D_final == 0 and endPos[0] > int(width * 0.70)):  # final sample at 70% width.  
                                                 T_final = tim2
                                                 D_final = endPos[0]
                                                 S_final_a = "Friction 2a: D_final="+str(endPos[0])+" - D_initial="+str(D_initial)+" / Pix:"+str(pixelmmratio)+"* 1000 / ("+str(T_final - T_initial)+") "   
                                                 V_final = (((D_final - D_initial) / pixelmmratio) / 1000) / (T_final - T_initial) #  We should have everything for stimp
                                                 S_final_b = "Friction 2b: V_final="+str(V_final)+" T_final="+str(T_final)+" pixelmmratio="+str(pixelmmratio) 
-                                                U_friction = compute_rolling_friction (V_initial, V_final, (D_final - D_initial) / (pixelmmratio * 1000))
+                                                # U_friction = coefficient_of_rolling_friotion and should be a constant for decelleration over the mat.
+                                                U_friction = alt_compute_rolling_friction (V_initial, V_final, (((D_final - D_initial) / pixelmmratio) * 1000), (T_final - T_initial))
                                                 U_stimp =  compute_stimp(V_initial, V_final, (((D_final - D_initial) / pixelmmratio) * 1000), (T_final - T_initial)) 
-                                                S_final_c = "Coefficient_of_rolling_friction: "+str(U_friction)+" U_Stimp: "+str(U_stimp)
+                                                S_final_c = "Coefficient_of_rolling_friction: "+str(U_friction)+" U_Stimp: "+str(U_stimp)+" St=u_f / 0.82="+str( U_friction / 0.82) 
 # END FRICTION_ESTIMATE                                             
 
                                         a = endPos[0] - startPos[0]
