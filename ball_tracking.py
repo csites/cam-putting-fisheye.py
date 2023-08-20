@@ -410,11 +410,18 @@ if parser.has_option('camera_properties','saturation'):
 if parser.has_option('camera_properties','exposure'):
     vs.set(cv2.CAP_PROP_EXPOSURE, cam_exposure)  # -7 means 2^-7 = 1/(2^7) = 1/128 sec.  A value of -1 = 2^(-1) = 1/(2^1) = 1/2 sec exposure time or 2FPS.    
 if parser.has_option('camera_properties','auto_exposure'):
-    if cam_autoexposure == -1:
-        cam_autoexposure = 0.75
+    if cam_autoexposure == -1:   # Camera autoexposure does some adjustments to the view which help with stability of the image. 
+        cam_autoexposure = 0.75  # The checkmark for this uses 0.75 (checked) and 0.25 (not-checked).
+        anti_cam_autoexposure = 0.25  # Oddly we need to cycle the check to stablize the camera autoexposure so he anti=checkmark is the opposite
     if cam_autoexposure == 0:
         cam_autoexposure = 0.25
+        anti_cam_autoexposure = 0.75
     vs.set(cv2.CAP_PROP_AUTO_EXPOSURE, cam_autoexposure) # CAP_PROP_AUTO_EXPOSURE is 0.25 this means manual, 0.75 sets it to automatic *workaround bug*
+    sleep(1)
+    vs.set(cv2.CAP_PROP_AUTO_EXPOSURE, anti_cam_autoexposure)  # Toggle it to set optimal.
+    sleep(1)
+    vs.set(cv2.CAP_PROP_AUTO_EXPOSURE, cam_autoexposure) # Now reset back to the desired setting and continue.
+    
 if parser.has_option('camera_properties','gamma'):
     vs.set(cv2.CAP_PROP_GAMMA, cam_gamma)
 if parser.has_option('camera_properties','gain'):
