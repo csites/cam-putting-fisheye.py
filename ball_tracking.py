@@ -417,9 +417,9 @@ if parser.has_option('camera_properties','auto_exposure'):
         cam_autoexposure = 0.25
         anti_cam_autoexposure = 0.75
     vs.set(cv2.CAP_PROP_AUTO_EXPOSURE, cam_autoexposure) # CAP_PROP_AUTO_EXPOSURE is 0.25 this means manual, 0.75 sets it to automatic *workaround bug*
-    sleep(1)
+    time.sleep(1)
     vs.set(cv2.CAP_PROP_AUTO_EXPOSURE, anti_cam_autoexposure)  # Toggle it to set optimal.
-    sleep(1)
+    time.sleep(1)
     vs.set(cv2.CAP_PROP_AUTO_EXPOSURE, cam_autoexposure) # Now reset back to the desired setting and continue.
     
 if parser.has_option('camera_properties','gamma'):
