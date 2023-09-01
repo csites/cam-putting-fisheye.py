@@ -1,14 +1,45 @@
 [putting]
-startx1 = 10
-startx2 = 180
-y1 = 180
-y2 = 450
+startx1 = 20
+startx2 = 127
+y1 = 201
+y2 = 300
 radius = 0
 flip = 0
-darkness = 0
+darkness = 30
 mjpeg = 1
 ps4 = 0
-fps = 0
+fps = 60
 height = 0
 width = 0
+customhsv = {'hmin': 119, 'smin': 171, 'vmin': 175, 'hmax': 255, 'smax': 255, 'vmax': 255}
+
+[Stimp_Adjust]
+stimp = 0.73
+
+[fisheye]
+k = [[546.92968129   0.         305.20376264]
+        [  0.         545.94616088 240.07233968]
+        [  0.           0.           1.        ]]
+d = [[-0.09555706]
+        [ 0.13416258]
+        [-0.59505532]
+        [ 0.94243098]]
+scaled_k = [[546.92968129   0.         305.20376264]
+        [  0.         545.94616088 240.07233968]
+        [  0.           0.           1.        ]]
+
+[camera_properties]
+brightness = 3.0
+contrast = 34.0
+hue = -10.0
+saturation = 65.0
+exposure = -6.0
+auto_exposure = 0.0
+gamma = 178.0
+gain = 62.0
+webcamindex = 3
+
+[perspective]
+camera_pitch = 44
+putt_line = 240
 
