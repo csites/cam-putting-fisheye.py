@@ -1349,7 +1349,7 @@ while True:
                     print("calibration mode - shot data not send")
                 else:
                     try:
-                        res = requests.post('http://127.0.0.1:8888/putting', json=data)
+                        res = requests.post('http://127.0.0.1:8888/putting', json=data, timeout=5)
                         res.raise_for_status()
                         # Convert response data to json
                         returned_data = res.json()
