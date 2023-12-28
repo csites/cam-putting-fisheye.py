@@ -1353,8 +1353,9 @@ while True:
                         res.raise_for_status()
                         # Convert response data to json
                         returned_data = res.json()
-
+                        
                         print(returned_data)
+                        returned_data = json.loads(returned_data)
                         result = returned_data['result']
                         print("Response from Node.js:", result)
 
